@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Capítulo 1 - Búsqueda de Raíces{% endblock %}
+
+{% block header_title %}Capítulo 1: Búsqueda de Raíces{% endblock %}
+{% block header_subtitle %}Métodos para encontrar raíces de funciones{% endblock %}
+
+{% block content %}
+<div class="metodos-container">
+    <div class="metodos-sidebar">
+        <h3>Métodos Disponibles</h3>
+        <button class="metodo-btn active" onclick="cambiarMetodo('biseccion')">Bisección</button>
+        <button class="metodo-btn" onclick="cambiarMetodo('regla-falsa')">Regla Falsa</button>
+        <button class="metodo-btn" onclick="cambiarMetodo('punto-fijo')">Punto Fijo</button>
+        <button class="metodo-btn" onclick="cambiarMetodo('newton')">Newton-Raphson</button>
+        <button class="metodo-btn" onclick="cambiarMetodo('secante')">Secante</button>
+        <button class="metodo-btn" onclick="cambiarMetodo('raices-multiples')">Raíces Múltiples</button>
+        <button class="metodo-btn" onclick="cambiarMetodo('comparacion')">Comparar Todos</button>
+    </div>
+
+    <div class="metodo-content">
+        <!-- Bisección -->
+        <div id="biseccion" class="metodo-panel active">
+            <h2>Método de Bisección</h2>
+            <div class="help-box">
+                <h4>Ayuda</h4>
+                <p>El método de bisección encuentra raíces en un intervalo [Xi, Xs] donde f(Xi) y f(Xs) tienen signos opuestos.</p>
+                <p><strong>Ejemplo:</strong> Para f(x) = x³ - 2x - 5, usa Xi=2, Xs=3</p>
+            </div>
+            <form id="form-biseccion" onsubmit="event.preventDefault(); ejecutarMetodo('biseccion');">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Xi (límite inferior):</label>
+                        <input type="number" step="any" name="xi" value="2" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Xs (límite superior):</label>
+                        <input type="number" step="any" name="xs" value="3" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tolerancia:</label>
+                        <input type="text" name="tol" value="0.00001" required>
+                        <small>Usa 5e-7 para error relativo, 0.00001 para absoluto</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Iteraciones máximas:</label>
+                        <input type="number" name="niter" value="100" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Función f(x):</label>
+                    <input type="text" name="funcion" value="x**3 - 2*x - 5" required>
+                    <small>Ejemplos: x**2-4, sin(x)-x/2, exp(x)-3*x, log(x)+x-1</small>
+                </div>
+                <button type="submit" class="btn btn-primary">Ejecutar</button>
+            </form>
+            <div id="loading-biseccion" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-biseccion" class="results-section"></div>
+        </div>
+
+        <!-- Regla Falsa -->
+        <div id="regla-falsa" class="metodo-panel">
+            <h2>Método de Regla Falsa</h2>
+            <div class="help-box">
+                <h4>Ayuda</h4>
+                <p>Similar a bisección, pero usa interpolación lineal para aproximar mejor la raíz.</p>
+            </div>
+            <form id="form-regla-falsa" onsubmit="event.preventDefault(); ejecutarMetodo('regla-falsa');">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Xi:</label>
+                        <input type="number" step="any" name="xi" value="2" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Xs:</label>
+                        <input type="number" step="any" name="xs" value="3" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tolerancia:</label>
+                        <input type="text" name="tol" value="0.00001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Iteraciones máximas:</label>
+                        <input type="number" name="niter" value="100" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Función f(x):</label>
+                    <input type="text" name="funcion" value="x**3 - 2*x - 5" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Ejecutar</button>
+            </form>
+            <div id="loading-regla-falsa" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-regla-falsa" class="results-section"></div>
+        </div>
+
+        <!-- Newton-Raphson -->
+        <div id="newton" class="metodo-panel">
+            <h2>Método de Newton-Raphson</h2>
+            <div class="help-box">
+                <h4>Ayuda</h4>
+                <p>Usa la derivada para converger rápidamente. Requiere un valor inicial cercano a la raíz.</p>
+                <p><strong>Nota:</strong> La derivada se calcula automáticamente.</p>
+            </div>
+            <form id="form-newton" onsubmit="event.preventDefault(); ejecutarMetodo('newton');">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>x0 (valor inicial):</label>
+                        <input type="number" step="any" name="x0" value="2.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tolerancia:</label>
+                        <input type="text" name="tol" value="0.00001" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Iteraciones máximas:</label>
+                    <input type="number" name="niter" value="100" required>
+                </div>
+                <div class="form-group">
+                    <label>Función f(x):</label>
+                    <input type="text" name="funcion" value="x**3 - 2*x - 5" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Ejecutar</button>
+            </form>
+            <div id="loading-newton" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-newton" class="results-section"></div>
+        </div>
+
+        <!-- Comparación -->
+        <div id="comparacion" class="metodo-panel">
+            <h2>Comparar Todos los Métodos</h2>
+            <div class="help-box">
+                <h4>Ayuda</h4>
+                <p>Ejecuta todos los métodos con los mismos parámetros y compara resultados.</p>
+                <p>El informe mostrará cuál método convergió más rápido y con menor error.</p>
+            </div>
+            <form onsubmit="event.preventDefault(); compararMetodos();">
+                <div class="form-group">
+                    <label>Función f(x):</label>
+                    <input type="text" id="comp-funcion" value="x**3 - 2*x - 5" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Xi:</label>
+                        <input type="number" step="any" id="comp-xi" value="2" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Xs:</label>
+                        <input type="number" step="any" id="comp-xs" value="3" required>
+                    </div>
+                    <div class="form-group">
+                        <label>x0:</label>
+                        <input type="number" step="any" id="comp-x0" value="2.5" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tolerancia:</label>
+                        <input type="text" id="comp-tol" value="0.00001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Iteraciones máximas:</label>
+                        <input type="number" id="comp-niter" value="100" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success">Comparar Todos</button>
+            </form>
+            <div id="loading-comparacion" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-comparacion" class="results-section"></div>
+        </div>
+    </div>
+</div>
+
+<div id="grafica" class="chart-container"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/cap1.js') }}"></script>
+{% endblock %}

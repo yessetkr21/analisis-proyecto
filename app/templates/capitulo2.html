@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}Capítulo 2 - Sistemas de Ecuaciones{% endblock %}
+
+{% block header_title %}Capítulo 2: Sistemas de Ecuaciones Lineales{% endblock %}
+{% block header_subtitle %}Métodos iterativos: Jacobi, Gauss-Seidel y SOR{% endblock %}
+
+{% block content %}
+<div class="help-box">
+    <h4>Formato de Entrada</h4>
+    <p><strong>Matriz A:</strong> Separa filas con ";" y columnas con ",". Ejemplo: <code>10,1,1;2,10,1;2,2,10</code></p>
+    <p><strong>Vector b:</strong> Separa elementos con ",". Ejemplo: <code>12,13,14</code></p>
+    <p><strong>Vector x0:</strong> (Opcional) Vector inicial. Si no se proporciona, usa el vector cero.</p>
+</div>
+
+<div class="metodos-container">
+    <div class="metodos-sidebar">
+        <h3>Métodos Disponibles</h3>
+        <button class="metodo-btn active" onclick="cambiarMetodo('jacobi')">Jacobi</button>
+        <button class="metodo-btn" onclick="cambiarMetodo('gauss-seidel')">Gauss-Seidel</button>
+        <button class="metodo-btn" onclick="cambiarMetodo('sor')">SOR</button>
+        <button class="metodo-btn" onclick="cambiarMetodo('comparacion-cap2')">Comparar Todos</button>
+    </div>
+
+    <div class="metodo-content">
+        <!-- Jacobi -->
+        <div id="jacobi" class="metodo-panel active">
+            <h2>Método de Jacobi</h2>
+            <form id="form-jacobi">
+                <div class="form-group">
+                    <label>Matriz A (coeficientes):</label>
+                    <input type="text" name="matriz" value="10,1,1;2,10,1;2,2,10" required>
+                    <small>Formato: fila1;fila2;fila3 (Ej: 10,1,1;2,10,1;2,2,10)</small>
+                </div>
+                <div class="form-group">
+                    <label>Vector b:</label>
+                    <input type="text" name="vector_b" value="12,13,14" required>
+                    <small>Formato: b1,b2,b3 (Ej: 12,13,14)</small>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Vector inicial x0 (opcional):</label>
+                        <input type="text" name="x0" placeholder="0,0,0">
+                        <small>Dejar vacío para usar vector cero</small>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tolerancia:</label>
+                        <input type="text" name="tol" value="0.000001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Iteraciones máximas:</label>
+                        <input type="number" name="niter" value="100" required>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="ejecutarMetodoCap2('jacobi')">Ejecutar</button>
+            </form>
+            <div id="loading-jacobi" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-jacobi" class="results-section"></div>
+        </div>
+
+        <!-- Gauss-Seidel -->
+        <div id="gauss-seidel" class="metodo-panel">
+            <h2>Método de Gauss-Seidel</h2>
+            <form id="form-gauss-seidel">
+                <div class="form-group">
+                    <label>Matriz A:</label>
+                    <input type="text" name="matriz" value="10,1,1;2,10,1;2,2,10" required>
+                </div>
+                <div class="form-group">
+                    <label>Vector b:</label>
+                    <input type="text" name="vector_b" value="12,13,14" required>
+                </div>
+                <div class="form-group">
+                    <label>Vector inicial x0 (opcional):</label>
+                    <input type="text" name="x0" placeholder="0,0,0">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tolerancia:</label>
+                        <input type="text" name="tol" value="0.000001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Iteraciones máximas:</label>
+                        <input type="number" name="niter" value="100" required>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="ejecutarMetodoCap2('gauss-seidel')">Ejecutar</button>
+            </form>
+            <div id="loading-gauss-seidel" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-gauss-seidel" class="results-section"></div>
+        </div>
+
+        <!-- SOR -->
+        <div id="sor" class="metodo-panel">
+            <h2>Método SOR (Successive Over-Relaxation)</h2>
+            <div class="help-box">
+                <p><strong>Factor w:</strong> 0 < w < 2</p>
+                <ul>
+                    <li>w < 1: Subrelajación</li>
+                    <li>w = 1: Gauss-Seidel estándar</li>
+                    <li>w > 1: Sobrerelajación (más rápido)</li>
+                </ul>
+                <p>Valor recomendado: 1.5</p>
+            </div>
+            <form id="form-sor">
+                <div class="form-group">
+                    <label>Matriz A:</label>
+                    <input type="text" name="matriz" value="10,1,1;2,10,1;2,2,10" required>
+                </div>
+                <div class="form-group">
+                    <label>Vector b:</label>
+                    <input type="text" name="vector_b" value="12,13,14" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Vector inicial x0 (opcional):</label>
+                        <input type="text" name="x0" placeholder="0,0,0">
+                    </div>
+                    <div class="form-group">
+                        <label>Factor de relajación w:</label>
+                        <input type="number" step="any" name="w" value="1.5" required>
+                        <small>Debe estar entre 0 y 2</small>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tolerancia:</label>
+                        <input type="text" name="tol" value="0.000001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Iteraciones máximas:</label>
+                        <input type="number" name="niter" value="100" required>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="ejecutarMetodoCap2('sor')">Ejecutar</button>
+            </form>
+            <div id="loading-sor" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-sor" class="results-section"></div>
+        </div>
+
+        <!-- Comparación -->
+        <div id="comparacion-cap2" class="metodo-panel">
+            <h2>Comparar Todos los Métodos</h2>
+            <div class="help-box">
+                <p>Ejecuta Jacobi, Gauss-Seidel y SOR con los mismos parámetros y compara:</p>
+                <ul>
+                    <li>Número de iteraciones de cada método</li>
+                    <li>Radio espectral y convergencia</li>
+                    <li>Cuál método es más eficiente</li>
+                </ul>
+            </div>
+            <form id="form-comparacion-cap2">
+                <div class="form-group">
+                    <label>Matriz A:</label>
+                    <input type="text" name="matriz" value="10,1,1;2,10,1;2,2,10" required>
+                </div>
+                <div class="form-group">
+                    <label>Vector b:</label>
+                    <input type="text" name="vector_b" value="12,13,14" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Factor w para SOR:</label>
+                        <input type="number" step="any" name="w" value="1.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tolerancia:</label>
+                        <input type="text" name="tol" value="0.000001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Iteraciones máximas:</label>
+                        <input type="number" name="niter" value="100" required>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-success" onclick="compararMetodosCap2()">Comparar Todos</button>
+            </form>
+            <div id="loading-comparacion-cap2" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-comparacion-cap2" class="results-section"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function cambiarMetodo(metodo) {
+    document.querySelectorAll('.metodo-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(metodo).classList.add('active');
+    document.querySelectorAll('.metodo-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+}
+
+async function ejecutarMetodoCap2(metodo) {
+    const form = document.getElementById(`form-${metodo}`);
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+
+    document.getElementById(`loading-${metodo}`).classList.add('show');
+    document.getElementById(`resultados-${metodo}`).classList.remove('show');
+
+    try {
+        const response = await fetch(`/api/capitulo2/${metodo}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        const resultado = await response.json();
+        mostrarResultadosCap2(metodo, resultado);
+    } catch (error) {
+        mostrarError(metodo, error.message);
+    } finally {
+        document.getElementById(`loading-${metodo}`).classList.remove('show');
+    }
+}
+
+function mostrarResultadosCap2(metodo, resultado) {
+    const div = document.getElementById(`resultados-${metodo}`);
+    div.classList.add('show');
+
+    if (!resultado.exito) {
+        div.innerHTML = `<div class="result-message error">${resultado.mensaje}</div>`;
+        return;
+    }
+
+    let html = `<div class="result-message success">${resultado.mensaje}</div>`;
+    html += `<div class="result-stats">`;
+    html += `<p><strong>Solución:</strong> x = [${resultado.solucion.map(x => x.toFixed(6)).join(', ')}]</p>`;
+    html += `<p><strong>Iteraciones:</strong> ${resultado.iteraciones}</p>`;
+    html += `<p><strong>Radio Espectral:</strong> ${resultado.radio_espectral.toFixed(8)}</p>`;
+    html += `<p><strong>Converge:</strong> ${resultado.converge ? 'Sí' : 'No'} (ρ < 1)</p>`;
+    html += `</div>`;
+
+    div.innerHTML = html;
+}
+
+async function compararMetodosCap2() {
+    const form = document.getElementById('form-comparacion-cap2');
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+
+    document.getElementById('loading-comparacion-cap2').classList.add('show');
+
+    try {
+        const response = await fetch('/api/capitulo2/comparar', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        const resultado = await response.json();
+        mostrarComparacionCap2(resultado);
+    } catch (error) {
+        console.error('Error:', error);
+    } finally {
+        document.getElementById('loading-comparacion-cap2').classList.remove('show');
+    }
+}
+
+function mostrarComparacionCap2(resultado) {
+    const div = document.getElementById('resultados-comparacion-cap2');
+    div.classList.add('show');
+
+    let html = '<h3>Resultados de la Comparación</h3>';
+    html += `<div class="mejor-metodo">Mejor Método: ${resultado.comparacion.mejor_metodo}</div>`;
+    html += `<p><strong>Diagonal Dominante:</strong> ${resultado.comparacion.es_diagonalmente_dominante ? 'Sí' : 'No'}</p>`;
+
+    html += '<div class="comparacion-grid">';
+    ['jacobi', 'gauss_seidel', 'sor'].forEach(metodo => {
+        const res = resultado[metodo];
+        if (res.exito) {
+            html += `
+                <div class="comparacion-card">
+                    <h4>${metodo.toUpperCase().replace('_', '-')}</h4>
+                    <p><strong>Iteraciones:</strong> ${res.iteraciones}</p>
+                    <p><strong>Radio Espectral:</strong> ${res.radio_espectral.toFixed(6)}</p>
+                    <p><strong>Converge:</strong> ${res.converge ? 'Sí' : 'No'}</p>
+                </div>
+            `;
+        }
+    });
+    html += '</div>';
+
+    div.innerHTML = html;
+}
+
+function mostrarError(metodo, mensaje) {
+    const div = document.getElementById(`resultados-${metodo}`);
+    div.classList.add('show');
+    div.innerHTML = `<div class="result-message error">Error: ${mensaje}</div>`;
+}
+</script>
+{% endblock %}

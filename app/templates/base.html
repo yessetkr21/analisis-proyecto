@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Métodos Numéricos{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <div class="nav-brand">Métodos Numéricos</div>
+            <ul class="nav-links">
+                <li><a href="/">Inicio</a></li>
+                <li><a href="/capitulo1">Capítulo 1</a></li>
+                <li><a href="/capitulo2">Capítulo 2</a></li>
+                <li><a href="/capitulo3">Capítulo 3</a></li>
+            </ul>
+        </nav>
+
+        <header class="header">
+            <h1>{% block header_title %}Métodos Numéricos{% endblock %}</h1>
+            <p class="subtitle">{% block header_subtitle %}{% endblock %}</p>
+        </header>
+
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="footer">
+            <p>Proyecto Final - Análisis Numérico | 2025</p>
+        </footer>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

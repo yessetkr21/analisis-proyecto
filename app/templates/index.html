@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Métodos Numéricos - Proyecto Final</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Métodos Numéricos</h1>
+            <p class="subtitle">Aplicación Interactiva para Análisis Numérico</p>
+        </header>
+
+        <main class="main-content">
+            <div class="intro-section">
+                <h2>Bienvenido</h2>
+                <p>Esta aplicación permite ejecutar y comparar los métodos numéricos vistos durante el curso.</p>
+                <p>Cada capítulo incluye:</p>
+                <ul>
+                    <li>Interfaz interactiva para cada método</li>
+                    <li>Visualización de resultados en tablas y gráficas</li>
+                    <li>Sistema de ayuda y prevención de errores</li>
+                    <li>Informes automáticos de comparación entre métodos</li>
+                </ul>
+            </div>
+
+            <div class="capitulos-grid">
+                <!-- Capítulo 1 -->
+                <div class="capitulo-card">
+                    <div class="card-header cap1">
+                        <h2>Capítulo 1</h2>
+                        <span class="card-subtitle">Búsqueda de Raíces</span>
+                    </div>
+                    <div class="card-body">
+                        <p>Métodos para encontrar raíces de funciones:</p>
+                        <ul class="metodos-list">
+                            <li>Bisección</li>
+                            <li>Regla Falsa</li>
+                            <li>Punto Fijo</li>
+                            <li>Newton-Raphson</li>
+                            <li>Secante</li>
+                            <li>Raíces Múltiples</li>
+                        </ul>
+                        <div class="features">
+                            <span class="badge">Gráficas</span>
+                            <span class="badge">Tablas</span>
+                            <span class="badge">Comparación</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="/capitulo1" class="btn btn-primary">Ir al Capítulo 1</a>
+                    </div>
+                </div>
+
+                <!-- Capítulo 2 -->
+                <div class="capitulo-card">
+                    <div class="card-header cap2">
+                        <h2>Capítulo 2</h2>
+                        <span class="card-subtitle">Sistemas de Ecuaciones</span>
+                    </div>
+                    <div class="card-body">
+                        <p>Métodos iterativos para sistemas lineales:</p>
+                        <ul class="metodos-list">
+                            <li>Jacobi</li>
+                            <li>Gauss-Seidel</li>
+                            <li>SOR (Sobrerelajación)</li>
+                        </ul>
+                        <div class="features">
+                            <span class="badge">Radio Espectral</span>
+                            <span class="badge">Convergencia</span>
+                            <span class="badge">Comparación</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="/capitulo2" class="btn btn-primary">Ir al Capítulo 2</a>
+                    </div>
+                </div>
+
+                <!-- Capítulo 3 -->
+                <div class="capitulo-card">
+                    <div class="card-header cap3">
+                        <h2>Capítulo 3</h2>
+                        <span class="card-subtitle">Interpolación</span>
+                    </div>
+                    <div class="card-body">
+                        <p>Métodos de interpolación polinomial:</p>
+                        <ul class="metodos-list">
+                            <li>Vandermonde</li>
+                            <li>Newton Interpolante</li>
+                            <li>Lagrange</li>
+                            <li>Spline Lineal</li>
+                            <li>Spline Cúbico</li>
+                        </ul>
+                        <div class="features">
+                            <span class="badge">Gráficas</span>
+                            <span class="badge">Polinomios</span>
+                            <span class="badge">Comparación</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="/capitulo3" class="btn btn-primary">Ir al Capítulo 3</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>Características de la Aplicación</h3>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <h4>Visualización</h4>
+                        <p>Gráficas interactivas y tablas detalladas para cada método</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">❓</div>
+                        <h4>Sistema de Ayuda</h4>
+                        <p>Instrucciones y ejemplos para cada método</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🔍</div>
+                        <h4>Validación</h4>
+                        <p>Prevención de errores y validación de entradas</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📈</div>
+                        <h4>Comparación</h4>
+                        <p>Informes automáticos comparando todos los métodos</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>Proyecto Final - Análisis Numérico | 2025</p>
+        </footer>
+    </div>
+</body>
+</html>

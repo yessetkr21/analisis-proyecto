@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Capítulo 3 - Interpolación{% endblock %}
+
+{% block header_title %}Capítulo 3: Interpolación{% endblock %}
+{% block header_subtitle %}Métodos de interpolación polinomial y splines{% endblock %}
+
+{% block content %}
+<div class="help-box">
+    <h4>Formato de Entrada de Puntos</h4>
+    <p>Separa puntos con ";" y coordenadas (x,y) con ",". Ejemplo: <code>0,1;1,2;2,1.5;3,3</code></p>
+    <p><strong>Restricciones:</strong> Mínimo 2 puntos, máximo 8 puntos. No puede haber valores de x repetidos.</p>
+</div>
+
+<div class="metodos-container">
+    <div class="metodos-sidebar">
+        <h3>Métodos Disponibles</h3>
+        <button class="metodo-btn active" onclick="cambiarMetodo('vandermonde')">Vandermonde</button>
+        <button class="metodo-btn" onclick="cambiarMetodo('newton-inter')">Newton</button>
+        <button class="metodo-btn" onclick="cambiarMetodo('lagrange')">Lagrange</button>
+        <button class="metodo-btn" onclick="cambiarMetodo('spline-lineal')">Spline Lineal</button>
+        <button class="metodo-btn" onclick="cambiarMetodo('spline-cubico')">Spline Cúbico</button>
+        <button class="metodo-btn" onclick="cambiarMetodo('comparacion-cap3')">Comparar Todos</button>
+    </div>
+
+    <div class="metodo-content">
+        <!-- Vandermonde -->
+        <div id="vandermonde" class="metodo-panel active">
+            <h2>Método de Vandermonde</h2>
+            <form id="form-vandermonde">
+                <div class="form-group">
+                    <label>Puntos (x,y):</label>
+                    <input type="text" name="puntos" value="0,1;1,2;2,1.5;3,3" required>
+                    <small>Formato: x1,y1;x2,y2;x3,y3 (Ej: 0,1;1,2;2,1.5;3,3)</small>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="ejecutarMetodoCap3('vandermonde')">Ejecutar</button>
+            </form>
+            <div id="loading-vandermonde" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-vandermonde" class="results-section"></div>
+        </div>
+
+        <!-- Newton -->
+        <div id="newton-inter" class="metodo-panel">
+            <h2>Método de Newton Interpolante</h2>
+            <form id="form-newton-inter">
+                <div class="form-group">
+                    <label>Puntos (x,y):</label>
+                    <input type="text" name="puntos" value="0,1;1,2;2,1.5;3,3" required>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="ejecutarMetodoCap3('newton')">Ejecutar</button>
+            </form>
+            <div id="loading-newton-inter" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-newton-inter" class="results-section"></div>
+        </div>
+
+        <!-- Lagrange -->
+        <div id="lagrange" class="metodo-panel">
+            <h2>Método de Lagrange</h2>
+            <form id="form-lagrange">
+                <div class="form-group">
+                    <label>Puntos (x,y):</label>
+                    <input type="text" name="puntos" value="0,1;1,2;2,1.5;3,3" required>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="ejecutarMetodoCap3('lagrange')">Ejecutar</button>
+            </form>
+            <div id="loading-lagrange" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-lagrange" class="results-section"></div>
+        </div>
+
+        <!-- Spline Lineal -->
+        <div id="spline-lineal" class="metodo-panel">
+            <h2>Spline Lineal</h2>
+            <form id="form-spline-lineal">
+                <div class="form-group">
+                    <label>Puntos (x,y):</label>
+                    <input type="text" name="puntos" value="0,1;1,2;2,1.5;3,3;4,2.5" required>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="ejecutarMetodoCap3('spline-lineal')">Ejecutar</button>
+            </form>
+            <div id="loading-spline-lineal" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-spline-lineal" class="results-section"></div>
+        </div>
+
+        <!-- Spline Cúbico -->
+        <div id="spline-cubico" class="metodo-panel">
+            <h2>Spline Cúbico Natural</h2>
+            <form id="form-spline-cubico">
+                <div class="form-group">
+                    <label>Puntos (x,y):</label>
+                    <input type="text" name="puntos" value="0,1;1,2;2,1.5;3,3;4,2.5" required>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="ejecutarMetodoCap3('spline-cubico')">Ejecutar</button>
+            </form>
+            <div id="loading-spline-cubico" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-spline-cubico" class="results-section"></div>
+        </div>
+
+        <!-- Comparación -->
+        <div id="comparacion-cap3" class="metodo-panel">
+            <h2>Comparar Todos los Métodos</h2>
+            <form id="form-comparacion-cap3">
+                <div class="form-group">
+                    <label>Puntos (x,y):</label>
+                    <input type="text" name="puntos" value="0,1;1,2;2,1.5;3,3;4,2.5" required>
+                </div>
+                <button type="button" class="btn btn-success" onclick="compararMetodosCap3()">Comparar Todos</button>
+            </form>
+            <div id="loading-comparacion-cap3" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-comparacion-cap3" class="results-section"></div>
+        </div>
+    </div>
+</div>
+
+<div id="grafica-cap3" class="chart-container"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function cambiarMetodo(metodo) {
+    document.querySelectorAll('.metodo-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(metodo).classList.add('active');
+    document.querySelectorAll('.metodo-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+}
+
+async function ejecutarMetodoCap3(metodo) {
+    const formId = metodo === 'newton' ? 'form-newton-inter' : `form-${metodo}`;
+    const loadingId = metodo === 'newton' ? 'loading-newton-inter' : `loading-${metodo}`;
+    const resultadosId = metodo === 'newton' ? 'resultados-newton-inter' : `resultados-${metodo}`;
+
+    const form = document.getElementById(formId);
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+
+    document.getElementById(loadingId).classList.add('show');
+
+    try {
+        const response = await fetch(`/api/capitulo3/${metodo}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        const resultado = await response.json();
+        mostrarResultadosCap3(resultadosId, resultado);
+        graficarInterpolacion(resultado);
+    } catch (error) {
+        mostrarError(resultadosId, error.message);
+    } finally {
+        document.getElementById(loadingId).classList.remove('show');
+    }
+}
+
+function mostrarResultadosCap3(divId, resultado) {
+    const div = document.getElementById(divId);
+    div.classList.add('show');
+
+    if (!resultado.exito) {
+        div.innerHTML = `<div class="result-message error">${resultado.mensaje}</div>`;
+        return;
+    }
+
+    let html = '<div class="result-message success">Interpolación calculada exitosamente</div>';
+
+    if (resultado.polinomio_str) {
+        html += `<div class="result-stats"><p><strong>Polinomio:</strong></p><p>${resultado.polinomio_str}</p></div>`;
+    }
+
+    if (resultado.segmentos) {
+        html += '<div class="result-stats"><h4>Segmentos:</h4><ul>';
+        resultado.segmentos.forEach((seg, i) => {
+            html += `<li><strong>[${seg.intervalo[0].toFixed(2)}, ${seg.intervalo[1].toFixed(2)}]:</strong> ${seg.polinomio}</li>`;
+        });
+        html += '</ul></div>';
+    }
+
+    div.innerHTML = html;
+}
+
+function graficarInterpolacion(resultado) {
+    if (!resultado.puntos_grafica) return;
+
+    const trace1 = {
+        x: resultado.puntos_originales.x,
+        y: resultado.puntos_originales.y,
+        mode: 'markers',
+        name: 'Puntos dados',
+        marker: {size: 10, color: '#e74c3c'}
+    };
+
+    const trace2 = {
+        x: resultado.puntos_grafica.x,
+        y: resultado.puntos_grafica.y,
+        type: 'scatter',
+        name: 'Interpolación',
+        line: {color: '#3498db', width: 2}
+    };
+
+    const layout = {
+        title: 'Interpolación',
+        xaxis: {title: 'x'},
+        yaxis: {title: 'y'},
+        hovermode: 'closest'
+    };
+
+    Plotly.newPlot('grafica-cap3', [trace1, trace2], layout, {responsive: true});
+}
+
+async function compararMetodosCap3() {
+    const form = document.getElementById('form-comparacion-cap3');
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+
+    document.getElementById('loading-comparacion-cap3').classList.add('show');
+
+    try {
+        const response = await fetch('/api/capitulo3/comparar', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        const resultado = await response.json();
+        mostrarComparacionCap3(resultado);
+    } catch (error) {
+        console.error('Error:', error);
+    } finally {
+        document.getElementById('loading-comparacion-cap3').classList.remove('show');
+    }
+}
+
+function mostrarComparacionCap3(resultado) {
+    const div = document.getElementById('resultados-comparacion-cap3');
+    div.classList.add('show');
+
+    let html = '<h3>Comparación de Métodos</h3>';
+    html += `<div class="mejor-metodo">Mejor Método: ${resultado.comparacion.mejor_metodo}</div>`;
+    html += `<p>${resultado.comparacion.analisis}</p>`;
+
+    div.innerHTML = html;
+}
+
+function mostrarError(divId, mensaje) {
+    const div = document.getElementById(divId);
+    div.classList.add('show');
+    div.innerHTML = `<div class="result-message error">Error: ${mensaje}</div>`;
+}
+</script>
+{% endblock %}
