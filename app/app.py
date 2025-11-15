@@ -17,6 +17,66 @@ app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
 
 
+# ===== FUNCIONES AUXILIARES =====
+
+def parsear_vector_x0(x0_str, n):
+    """
+    Parsea el vector inicial x0 desde un string
+
+    Parámetros:
+    x0_str: String con valores separados por comas (ej: "0,0,0" o "1,2,3")
+    n: Longitud esperada del vector
+
+    Retorna: numpy array con el vector x0
+    """
+    # Si el string está vacío o es None, retornar vector de ceros
+    if not x0_str or not x0_str.strip():
+        return np.zeros(n)
+
+    try:
+        # Limpiar el string y separar por comas
+        valores = [x.strip() for x in x0_str.strip().split(',') if x.strip()]
+
+        # Convertir a float
+        x0 = np.array([float(v) for v in valores])
+
+        # Validar longitud
+        if len(x0) != n:
+            return np.zeros(n)
+
+        return x0
+    except (ValueError, TypeError):
+        # Si hay error en la conversión, retornar vector de ceros
+        return np.zeros(n)
+
+
+def parsear_matriz(matriz_str, b_str):
+    """
+    Parsea matriz y vector b desde strings
+
+    Parámetros:
+    matriz_str: String con matriz en formato "1,2,3;4,5,6;7,8,9"
+    b_str: String con vector en formato "1,2,3"
+
+    Retorna: tuple (A, b) como numpy arrays
+    """
+    try:
+        # Procesar matriz
+        filas = matriz_str.strip().split(';')
+        A = []
+        for fila in filas:
+            elementos = [float(x.strip()) for x in fila.split(',')]
+            A.append(elementos)
+        A = np.array(A)
+
+        # Procesar vector b
+        b = np.array([float(x.strip()) for x in b_str.strip().split(',')])
+
+        return A, b
+    except Exception as e:
+        raise ValueError(f"Error al parsear matriz: {str(e)}")
+
+
 # ===== RUTAS PRINCIPALES =====
 
 @app.route('/')
@@ -82,11 +142,11 @@ def api_punto_fijo():
     try:
         data = request.json
         resultado = capitulo1.punto_fijo(
+            data['funcion_g'],
             float(data['x0']),
             float(data['tol']),
             int(data['niter']),
-            data['funcion_f'],
-            data['funcion_g']
+            data['funcion_f']
         )
         return jsonify(resultado)
     except Exception as e:
@@ -233,9 +293,7 @@ def api_jacobi():
         if error:
             return jsonify({"exito": False, "mensaje": error}), 400
 
-        x0 = np.zeros(len(A))
-        if 'x0' in data:
-            x0 = np.array([float(x) for x in data['x0'].split(',')])
+        x0 = parsear_vector_x0(data.get('x0', ''), len(A))
 
         resultado = capitulo2.jacobi(A, b, x0, float(data['tol']), int(data['niter']))
         return jsonify(resultado)
@@ -252,9 +310,7 @@ def api_gauss_seidel():
         if error:
             return jsonify({"exito": False, "mensaje": error}), 400
 
-        x0 = np.zeros(len(A))
-        if 'x0' in data:
-            x0 = np.array([float(x) for x in data['x0'].split(',')])
+        x0 = parsear_vector_x0(data.get('x0', ''), len(A))
 
         resultado = capitulo2.gauss_seidel(A, b, x0, float(data['tol']), int(data['niter']))
         return jsonify(resultado)
@@ -271,9 +327,7 @@ def api_sor():
         if error:
             return jsonify({"exito": False, "mensaje": error}), 400
 
-        x0 = np.zeros(len(A))
-        if 'x0' in data:
-            x0 = np.array([float(x) for x in data['x0'].split(',')])
+        x0 = parsear_vector_x0(data.get('x0', ''), len(A))
 
         resultado = capitulo2.sor(A, b, x0, float(data['tol']), int(data['niter']), float(data['w']))
         return jsonify(resultado)
@@ -291,10 +345,7 @@ def api_comparar_cap2():
         if error:
             return jsonify({"exito": False, "mensaje": error}), 400
 
-        x0 = np.zeros(len(A))
-        if 'x0' in data:
-            x0 = np.array([float(x) for x in data['x0'].split(',')])
-
+        x0 = parsear_vector_x0(data.get('x0', ''), len(A))
         w = float(data.get('w', 1.5))
 
         resultados = capitulo2.comparar_metodos_cap2(A, b, x0, float(data['tol']), int(data['niter']), w)
@@ -406,6 +457,294 @@ def not_found(error):
 @app.errorhandler(500)
 def internal_error(error):
     return render_template('500.html'), 500
+
+
+# ===== ENDPOINTS DE INFORMES COMPARATIVOS =====
+
+@app.route('/api/capitulo1/informe', methods=['POST'])
+def informe_capitulo1():
+    """Genera informe comparativo de todos los métodos del Capítulo 1"""
+    import time
+    try:
+        data = request.get_json()
+        funcion = data['funcion']
+        xi = float(data['xi'])
+        xs = float(data['xs'])
+        x0 = float(data['x0'])
+        x1 = float(data['x1'])
+        tol = float(data['tol'])
+        niter = int(data['niter'])
+
+        resultados = []
+
+        # 1. Bisección
+        try:
+            inicio = time.time()
+            res = capitulo1.biseccion(xi, xs, tol, niter, funcion)
+            tiempo = time.time() - inicio
+            if res['exito']:
+                resultados.append({
+                    'metodo': 'Bisección',
+                    'raiz': res['raiz'],
+                    'iteraciones': res['iteraciones'],
+                    'error': res['error_final'],
+                    'tiempo': tiempo,
+                    'exito': True
+                })
+        except Exception as e:
+            resultados.append({'metodo': 'Bisección', 'exito': False, 'error_msg': str(e)})
+
+        # 2. Regla Falsa
+        try:
+            inicio = time.time()
+            res = capitulo1.regla_falsa(xi, xs, tol, niter, funcion)
+            tiempo = time.time() - inicio
+            if res['exito']:
+                resultados.append({
+                    'metodo': 'Regla Falsa',
+                    'raiz': res['raiz'],
+                    'iteraciones': res['iteraciones'],
+                    'error': res['error_final'],
+                    'tiempo': tiempo,
+                    'exito': True
+                })
+        except Exception as e:
+            resultados.append({'metodo': 'Regla Falsa', 'exito': False, 'error_msg': str(e)})
+
+        # 3. Punto Fijo (usar g(x) = x - f(x)/3 como ejemplo)
+        try:
+            inicio = time.time()
+            # Para punto fijo, usar una transformación simple
+            g_funcion = f"x - ({funcion})/3"
+            res = capitulo1.punto_fijo(g_funcion, x0, tol, niter, funcion)
+            tiempo = time.time() - inicio
+            if res['exito']:
+                resultados.append({
+                    'metodo': 'Punto Fijo',
+                    'raiz': res['raiz'],
+                    'iteraciones': res['iteraciones'],
+                    'error': res['error_final'],
+                    'tiempo': tiempo,
+                    'exito': True
+                })
+        except Exception as e:
+            resultados.append({'metodo': 'Punto Fijo', 'exito': False, 'error_msg': str(e)})
+
+        # 4. Newton-Raphson
+        try:
+            inicio = time.time()
+            res = capitulo1.newton_raphson(x0, tol, niter, funcion)
+            tiempo = time.time() - inicio
+            if res['exito']:
+                resultados.append({
+                    'metodo': 'Newton-Raphson',
+                    'raiz': res['raiz'],
+                    'iteraciones': res['iteraciones'],
+                    'error': res['error_final'],
+                    'tiempo': tiempo,
+                    'exito': True
+                })
+        except Exception as e:
+            resultados.append({'metodo': 'Newton-Raphson', 'exito': False, 'error_msg': str(e)})
+
+        # 5. Secante
+        try:
+            inicio = time.time()
+            res = capitulo1.secante(x0, x1, tol, niter, funcion)
+            tiempo = time.time() - inicio
+            if res['exito']:
+                resultados.append({
+                    'metodo': 'Secante',
+                    'raiz': res['raiz'],
+                    'iteraciones': res['iteraciones'],
+                    'error': res['error_final'],
+                    'tiempo': tiempo,
+                    'exito': True
+                })
+        except Exception as e:
+            resultados.append({'metodo': 'Secante', 'exito': False, 'error_msg': str(e)})
+
+        # Filtrar solo métodos exitosos
+        exitosos = [r for r in resultados if r.get('exito', False)]
+
+        if not exitosos:
+            return jsonify({
+                'exito': False,
+                'mensaje': 'Ningún método convergió. Intenta con otros parámetros.',
+                'resultados': resultados
+            })
+
+        # Encontrar el mejor método (menor error)
+        mejor = min(exitosos, key=lambda x: x['error'])
+        mas_rapido = min(exitosos, key=lambda x: x['iteraciones'])
+
+        return jsonify({
+            'exito': True,
+            'resultados': resultados,
+            'mejor_error': mejor['metodo'],
+            'mejor_iteraciones': mas_rapido['metodo'],
+            'estadisticas': {
+                'total_metodos': len(resultados),
+                'exitosos': len(exitosos),
+                'fallidos': len(resultados) - len(exitosos)
+            }
+        })
+
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': f'Error: {str(e)}'})
+
+
+@app.route('/api/capitulo2/informe', methods=['POST'])
+def informe_capitulo2():
+    """Genera informe comparativo de todos los métodos del Capítulo 2"""
+    import time
+    try:
+        data = request.get_json()
+        A, b = parsear_matriz(data['matriz'], data['vector_b'])
+        n = len(A)
+        x0 = parsear_vector_x0(data.get('x0', ''), n)
+        tol = float(data['tol'])
+        niter = int(data['niter'])
+        w = float(data.get('w', 1.5))
+
+        resultados = []
+
+        # 1. Jacobi
+        try:
+            inicio = time.time()
+            res = capitulo2.jacobi(A.copy(), b.copy(), x0.copy(), tol, niter)
+            tiempo = time.time() - inicio
+            if res['exito']:
+                resultados.append({
+                    'metodo': 'Jacobi',
+                    'exito': True,
+                    'iteraciones': res['iteraciones'],
+                    'error': res['error_final'],
+                    'radio_espectral': res['radio_espectral'],
+                    'converge': res['converge'],
+                    'tiempo': tiempo
+                })
+        except Exception as e:
+            resultados.append({'metodo': 'Jacobi', 'exito': False, 'error_msg': str(e)})
+
+        # 2. Gauss-Seidel
+        try:
+            inicio = time.time()
+            res = capitulo2.gauss_seidel(A.copy(), b.copy(), x0.copy(), tol, niter)
+            tiempo = time.time() - inicio
+            if res['exito']:
+                resultados.append({
+                    'metodo': 'Gauss-Seidel',
+                    'exito': True,
+                    'iteraciones': res['iteraciones'],
+                    'error': res['error_final'],
+                    'radio_espectral': res['radio_espectral'],
+                    'converge': res['converge'],
+                    'tiempo': tiempo
+                })
+        except Exception as e:
+            resultados.append({'metodo': 'Gauss-Seidel', 'exito': False, 'error_msg': str(e)})
+
+        # 3. SOR
+        try:
+            inicio = time.time()
+            res = capitulo2.sor(A.copy(), b.copy(), x0.copy(), tol, niter, w)
+            tiempo = time.time() - inicio
+            if res['exito']:
+                resultados.append({
+                    'metodo': f'SOR (w={w})',
+                    'exito': True,
+                    'iteraciones': res['iteraciones'],
+                    'error': res['error_final'],
+                    'radio_espectral': res['radio_espectral'],
+                    'converge': res['converge'],
+                    'tiempo': tiempo
+                })
+        except Exception as e:
+            resultados.append({'metodo': 'SOR', 'exito': False, 'error_msg': str(e)})
+
+        # Filtrar solo métodos exitosos
+        exitosos = [r for r in resultados if r.get('exito', False)]
+
+        if not exitosos:
+            return jsonify({
+                'exito': False,
+                'mensaje': 'Ningún método convergió. Verifica que la matriz sea adecuada.',
+                'resultados': resultados
+            })
+
+        # Encontrar el mejor método
+        mejor_iter = min(exitosos, key=lambda x: x['iteraciones'])
+        mejor_error = min(exitosos, key=lambda x: x['error'])
+
+        return jsonify({
+            'exito': True,
+            'resultados': resultados,
+            'mejor_iteraciones': mejor_iter['metodo'],
+            'mejor_error': mejor_error['metodo'],
+            'estadisticas': {
+                'total_metodos': len(resultados),
+                'exitosos': len(exitosos),
+                'fallidos': len(resultados) - len(exitosos)
+            }
+        })
+
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': f'Error: {str(e)}'})
+
+
+@app.route('/api/capitulo3/informe', methods=['POST'])
+def informe_capitulo3():
+    """Genera informe comparativo de todos los métodos del Capítulo 3"""
+    import time
+    try:
+        data = request.get_json()
+        puntos_str = data['puntos']
+
+        resultados = []
+        metodos = ['vandermonde', 'newton', 'lagrange', 'spline-lineal', 'spline-cubico']
+        nombres = ['Vandermonde', 'Newton Interpolante', 'Lagrange', 'Spline Lineal', 'Spline Cúbico']
+
+        for metodo, nombre in zip(metodos, nombres):
+            try:
+                inicio = time.time()
+                res = capitulo3.ejecutar_metodo(metodo, puntos_str)
+                tiempo = time.time() - inicio
+
+                if res['exito']:
+                    resultados.append({
+                        'metodo': nombre,
+                        'exito': True,
+                        'polinomio': res.get('polinomio', 'N/A'),
+                        'tiempo': tiempo
+                    })
+            except Exception as e:
+                resultados.append({'metodo': nombre, 'exito': False, 'error_msg': str(e)})
+
+        exitosos = [r for r in resultados if r.get('exito', False)]
+
+        if not exitosos:
+            return jsonify({
+                'exito': False,
+                'mensaje': 'Ningún método pudo interpolar los puntos.',
+                'resultados': resultados
+            })
+
+        mas_rapido = min(exitosos, key=lambda x: x['tiempo'])
+
+        return jsonify({
+            'exito': True,
+            'resultados': resultados,
+            'mas_rapido': mas_rapido['metodo'],
+            'estadisticas': {
+                'total_metodos': len(resultados),
+                'exitosos': len(exitosos),
+                'fallidos': len(resultados) - len(exitosos)
+            }
+        })
+
+    except Exception as e:
+        return jsonify({'exito': False, 'mensaje': f'Error: {str(e)}'})
 
 
 if __name__ == '__main__':

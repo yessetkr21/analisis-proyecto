@@ -19,7 +19,8 @@
         <button class="metodo-btn active" onclick="cambiarMetodo('jacobi')">Jacobi</button>
         <button class="metodo-btn" onclick="cambiarMetodo('gauss-seidel')">Gauss-Seidel</button>
         <button class="metodo-btn" onclick="cambiarMetodo('sor')">SOR</button>
-        <button class="metodo-btn" onclick="cambiarMetodo('comparacion-cap2')">Comparar Todos</button>
+        <hr style="margin: 20px 0; border: 1px solid #e0e0e0;">
+        <button class="metodo-btn" onclick="cambiarMetodo('informe-cap2')" style="background: #27ae60; color: white;">📊 Generar Informe</button>
     </div>
 
     <div class="metodo-content">
@@ -140,45 +141,64 @@
             <div id="resultados-sor" class="results-section"></div>
         </div>
 
-        <!-- Comparación -->
-        <div id="comparacion-cap2" class="metodo-panel">
-            <h2>Comparar Todos los Métodos</h2>
+        <!-- Panel de Informe Comparativo Cap 2 -->
+        <div id="informe-cap2" class="metodo-panel">
+            <h2>📊 Informe Comparativo de Métodos</h2>
             <div class="help-box">
-                <p>Ejecuta Jacobi, Gauss-Seidel y SOR con los mismos parámetros y compara:</p>
+                <h4>¿Qué hace el informe?</h4>
+                <p>Ejecuta los 3 métodos (Jacobi, Gauss-Seidel y SOR) con la misma matriz y compara:</p>
                 <ul>
-                    <li>Número de iteraciones de cada método</li>
-                    <li>Radio espectral y convergencia</li>
-                    <li>Cuál método es más eficiente</li>
+                    <li>Número de iteraciones hasta convergencia</li>
+                    <li>Error final alcanzado</li>
+                    <li>Radio espectral de cada método</li>
+                    <li>Tiempo de ejecución</li>
                 </ul>
+                <p><strong>Resultado:</strong> Identifica cuál método convergió más rápido y con menor error.</p>
             </div>
-            <form id="form-comparacion-cap2">
+
+            <form id="form-informe-cap2">
                 <div class="form-group">
-                    <label>Matriz A:</label>
+                    <label>Matriz A (coeficientes):</label>
                     <input type="text" name="matriz" value="10,1,1;2,10,1;2,2,10" required>
+                    <small>Formato: fila1;fila2;fila3 - Ejemplo: 10,1,1;2,10,1;2,2,10</small>
                 </div>
+
                 <div class="form-group">
-                    <label>Vector b:</label>
+                    <label>Vector b (términos independientes):</label>
                     <input type="text" name="vector_b" value="12,13,14" required>
+                    <small>Formato: b1,b2,b3 - Ejemplo: 12,13,14</small>
                 </div>
+
                 <div class="form-row">
+                    <div class="form-group">
+                        <label>Vector inicial x0 (opcional):</label>
+                        <input type="text" name="x0" placeholder="0,0,0">
+                        <small>Si vacío, usa vector cero</small>
+                    </div>
                     <div class="form-group">
                         <label>Factor w para SOR:</label>
                         <input type="number" step="any" name="w" value="1.5" required>
                     </div>
+                </div>
+
+                <div class="form-row">
                     <div class="form-group">
                         <label>Tolerancia:</label>
-                        <input type="text" name="tol" value="0.000001" required>
+                        <input type="number" step="any" name="tol" value="1e-6" required>
                     </div>
                     <div class="form-group">
                         <label>Iteraciones máximas:</label>
                         <input type="number" name="niter" value="100" required>
                     </div>
                 </div>
-                <button type="button" class="btn btn-success" onclick="compararMetodosCap2()">Comparar Todos</button>
+
+                <button type="button" class="btn btn-success" onclick="generarInformeCap2()">🚀 Generar Informe Comparativo</button>
             </form>
-            <div id="loading-comparacion-cap2" class="loading"><div class="spinner"></div></div>
-            <div id="resultados-comparacion-cap2" class="results-section"></div>
+
+            <div id="loading-informe-cap2" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-informe-cap2" class="results-section"></div>
         </div>
+
     </div>
 </div>
 {% endblock %}
@@ -233,63 +253,148 @@ function mostrarResultadosCap2(metodo, resultado) {
     html += `<p><strong>Converge:</strong> ${resultado.converge ? 'Sí' : 'No'} (ρ < 1)</p>`;
     html += `</div>`;
 
-    div.innerHTML = html;
-}
-
-async function compararMetodosCap2() {
-    const form = document.getElementById('form-comparacion-cap2');
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData);
-
-    document.getElementById('loading-comparacion-cap2').classList.add('show');
-
-    try {
-        const response = await fetch('/api/capitulo2/comparar', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-
-        const resultado = await response.json();
-        mostrarComparacionCap2(resultado);
-    } catch (error) {
-        console.error('Error:', error);
-    } finally {
-        document.getElementById('loading-comparacion-cap2').classList.remove('show');
+    // Agregar tabla de iteraciones
+    if (resultado.tabla && resultado.tabla.length > 0) {
+        html += crearTablaCap2(resultado.tabla);
     }
-}
-
-function mostrarComparacionCap2(resultado) {
-    const div = document.getElementById('resultados-comparacion-cap2');
-    div.classList.add('show');
-
-    let html = '<h3>Resultados de la Comparación</h3>';
-    html += `<div class="mejor-metodo">Mejor Método: ${resultado.comparacion.mejor_metodo}</div>`;
-    html += `<p><strong>Diagonal Dominante:</strong> ${resultado.comparacion.es_diagonalmente_dominante ? 'Sí' : 'No'}</p>`;
-
-    html += '<div class="comparacion-grid">';
-    ['jacobi', 'gauss_seidel', 'sor'].forEach(metodo => {
-        const res = resultado[metodo];
-        if (res.exito) {
-            html += `
-                <div class="comparacion-card">
-                    <h4>${metodo.toUpperCase().replace('_', '-')}</h4>
-                    <p><strong>Iteraciones:</strong> ${res.iteraciones}</p>
-                    <p><strong>Radio Espectral:</strong> ${res.radio_espectral.toFixed(6)}</p>
-                    <p><strong>Converge:</strong> ${res.converge ? 'Sí' : 'No'}</p>
-                </div>
-            `;
-        }
-    });
-    html += '</div>';
 
     div.innerHTML = html;
+}
+
+function crearTablaCap2(tabla) {
+    if (!tabla || tabla.length === 0) return '';
+
+    const n = tabla[0].x.length; // Número de variables
+
+    let html = '<div class="table-container"><table><thead><tr>';
+    html += '<th>Iteración</th>';
+    for (let i = 0; i < n; i++) {
+        html += `<th>x${i + 1}</th>`;
+    }
+    html += '<th>Error</th>';
+    html += '</tr></thead><tbody>';
+
+    // Filas
+    tabla.forEach(fila => {
+        html += '<tr>';
+        html += `<td>${fila.iter}</td>`;
+        fila.x.forEach(val => {
+            html += `<td>${val.toFixed(6)}</td>`;
+        });
+        html += `<td>${fila.error !== null && fila.error !== undefined ? fila.error.toFixed(6) : 'NaN'}</td>`;
+        html += '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+    return html;
 }
 
 function mostrarError(metodo, mensaje) {
     const div = document.getElementById(`resultados-${metodo}`);
     div.classList.add('show');
     div.innerHTML = `<div class="result-message error">Error: ${mensaje}</div>`;
+}
+
+// ===== INFORME COMPARATIVO CAPÍTULO 2 =====
+async function generarInformeCap2() {
+    const form = document.getElementById('form-informe-cap2');
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+
+    const loadingDiv = document.getElementById('loading-informe-cap2');
+    const resultadosDiv = document.getElementById('resultados-informe-cap2');
+
+    loadingDiv.classList.add('show');
+    resultadosDiv.classList.remove('show');
+
+    try {
+        const response = await fetch('/api/capitulo2/informe', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        const resultado = await response.json();
+        mostrarInformeCap2(resultado);
+    } catch (error) {
+        resultadosDiv.classList.add('show');
+        resultadosDiv.innerHTML = `<div class="result-message error">Error: ${error.message}</div>`;
+    } finally {
+        loadingDiv.classList.remove('show');
+    }
+}
+
+function mostrarInformeCap2(resultado) {
+    const resultadosDiv = document.getElementById('resultados-informe-cap2');
+    resultadosDiv.classList.add('show');
+
+    if (!resultado.exito) {
+        resultadosDiv.innerHTML = `<div class="result-message error">${resultado.mensaje}</div>`;
+        return;
+    }
+
+    let html = '<div class="informe-container">';
+    html += '<h3>📊 Resultados de la Comparación</h3>';
+
+    // Tabla comparativa
+    html += '<div class="table-container"><table>';
+    html += '<thead><tr>';
+    html += '<th>Método</th><th>Estado</th><th>Iteraciones</th><th>Error Final</th>';
+    html += '<th>Radio Espectral</th><th>Converge</th><th>Tiempo</th>';
+    html += '</tr></thead><tbody>';
+
+    resultado.resultados.forEach(r => {
+        if (r.exito) {
+            html += '<tr>';
+            html += `<td><strong>${r.metodo}</strong></td>`;
+            html += `<td><span style="color: #27ae60;">✓ Exitoso</span></td>`;
+            html += `<td>${r.iteraciones}</td>`;
+            html += `<td>${r.error.toExponential(4)}</td>`;
+            html += `<td>${r.radio_espectral.toFixed(8)}</td>`;
+            html += `<td>${r.converge ? '<span style="color: #27ae60;">Sí (ρ < 1)</span>' : '<span style="color: #e74c3c;">No (ρ ≥ 1)</span>'}</td>`;
+            html += `<td>${(r.tiempo * 1000).toFixed(2)} ms</td>`;
+            html += '</tr>';
+        } else {
+            html += '<tr>';
+            html += `<td><strong>${r.metodo}</strong></td>`;
+            html += `<td><span style="color: #e74c3c;">✗ Falló</span></td>`;
+            html += `<td colspan="5">${r.error_msg || 'No convergió'}</td>`;
+            html += '</tr>';
+        }
+    });
+
+    html += '</tbody></table></div>';
+
+    // Análisis y conclusiones
+    html += '<div class="informe-analisis">';
+    html += '<h4>🏆 Análisis y Conclusiones</h4>';
+    html += '<div class="conclusiones">';
+    html += `<p><strong>⚡ Método más rápido (menos iteraciones):</strong> <span class="highlight">${resultado.mejor_iteraciones}</span></p>`;
+    html += `<p><strong>🎯 Mejor método (menor error):</strong> <span class="highlight">${resultado.mejor_error}</span></p>`;
+    html += `<p><strong>📈 Métodos exitosos:</strong> ${resultado.estadisticas.exitosos} de ${resultado.estadisticas.total_metodos}</p>`;
+
+    if (resultado.estadisticas.fallidos > 0) {
+        html += `<p><strong>⚠️ Métodos que fallaron:</strong> ${resultado.estadisticas.fallidos}</p>`;
+    }
+
+    html += '<p class="nota">Nota: El radio espectral indica si el método puede converger (ρ < 1 garantiza convergencia).</p>';
+    html += '</div></div></div>';
+
+    // Estilos
+    html += `
+    <style>
+    .informe-container { margin-top: 20px; }
+    .informe-analisis {
+        background: #f9f9f9; padding: 20px; border-radius: 8px;
+        margin-top: 20px; border-left: 4px solid #27ae60;
+    }
+    .conclusiones p { margin: 10px 0; font-size: 1.05em; }
+    .highlight { color: #27ae60; font-weight: bold; font-size: 1.1em; }
+    .nota { font-size: 0.9em; color: #666; font-style: italic; margin-top: 15px; }
+    </style>
+    `;
+
+    resultadosDiv.innerHTML = html;
 }
 </script>
 {% endblock %}

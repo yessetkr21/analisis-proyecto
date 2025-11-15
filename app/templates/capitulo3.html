@@ -20,7 +20,8 @@
         <button class="metodo-btn" onclick="cambiarMetodo('lagrange')">Lagrange</button>
         <button class="metodo-btn" onclick="cambiarMetodo('spline-lineal')">Spline Lineal</button>
         <button class="metodo-btn" onclick="cambiarMetodo('spline-cubico')">Spline Cúbico</button>
-        <button class="metodo-btn" onclick="cambiarMetodo('comparacion-cap3')">Comparar Todos</button>
+        <hr style="margin: 20px 0; border: 1px solid #e0e0e0;">
+        <button class="metodo-btn" onclick="cambiarMetodo('informe-cap3')" style="background: #27ae60; color: white;">📊 Generar Informe</button>
     </div>
 
     <div class="metodo-content">
@@ -95,18 +96,32 @@
             <div id="resultados-spline-cubico" class="results-section"></div>
         </div>
 
-        <!-- Comparación -->
-        <div id="comparacion-cap3" class="metodo-panel">
-            <h2>Comparar Todos los Métodos</h2>
-            <form id="form-comparacion-cap3">
+        <!-- Panel de Informe Comparativo Cap 3 -->
+        <div id="informe-cap3" class="metodo-panel">
+            <h2>📊 Informe Comparativo de Métodos</h2>
+            <div class="help-box">
+                <h4>¿Qué hace el informe?</h4>
+                <p>Ejecuta los 5 métodos de interpolación con los mismos puntos y compara:</p>
+                <ul>
+                    <li>Calidad del polinomio interpolante</li>
+                    <li>Error de interpolación</li>
+                    <li>Complejidad computacional</li>
+                </ul>
+                <p><strong>Resultado:</strong> Identifica cuál método es más adecuado para el conjunto de puntos dado.</p>
+            </div>
+
+            <form id="form-informe-cap3">
                 <div class="form-group">
                     <label>Puntos (x,y):</label>
                     <input type="text" name="puntos" value="0,1;1,2;2,1.5;3,3;4,2.5" required>
+                    <small>Formato: x1,y1;x2,y2;... (Ej: 0,1;1,2;2,1.5;3,3;4,2.5)</small>
                 </div>
-                <button type="button" class="btn btn-success" onclick="compararMetodosCap3()">Comparar Todos</button>
+
+                <button type="button" class="btn btn-success" onclick="generarInformeCap3()">🚀 Generar Informe Comparativo</button>
             </form>
-            <div id="loading-comparacion-cap3" class="loading"><div class="spinner"></div></div>
-            <div id="resultados-comparacion-cap3" class="results-section"></div>
+
+            <div id="loading-informe-cap3" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-informe-cap3" class="results-section"></div>
         </div>
     </div>
 </div>
@@ -244,6 +259,115 @@ function mostrarError(divId, mensaje) {
     const div = document.getElementById(divId);
     div.classList.add('show');
     div.innerHTML = `<div class="result-message error">Error: ${mensaje}</div>`;
+}
+
+// ===== INFORME COMPARATIVO CAPÍTULO 3 =====
+async function generarInformeCap3() {
+    const form = document.getElementById('form-informe-cap3');
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+
+    const loadingDiv = document.getElementById('loading-informe-cap3');
+    const resultadosDiv = document.getElementById('resultados-informe-cap3');
+
+    loadingDiv.classList.add('show');
+    resultadosDiv.classList.remove('show');
+
+    try {
+        const response = await fetch('/api/capitulo3/informe', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        const resultado = await response.json();
+        mostrarInformeCap3(resultado);
+    } catch (error) {
+        resultadosDiv.classList.add('show');
+        resultadosDiv.innerHTML = `<div class="result-message error">Error: ${error.message}</div>`;
+    } finally {
+        loadingDiv.classList.remove('show');
+    }
+}
+
+function mostrarInformeCap3(resultado) {
+    const resultadosDiv = document.getElementById('resultados-informe-cap3');
+    resultadosDiv.classList.add('show');
+
+    if (!resultado.exito) {
+        resultadosDiv.innerHTML = `<div class="result-message error">${resultado.mensaje}</div>`;
+        return;
+    }
+
+    let html = '<div class="informe-container">';
+    html += '<h3>📊 Informe Comparativo - Capítulo 3</h3>';
+
+    // Tabla comparativa
+    html += '<div class="table-container"><table>';
+    html += '<thead><tr>';
+    html += '<th>Método</th><th>Estado</th><th>Polinomio/Spline</th><th>Tiempo (s)</th>';
+    html += '</tr></thead><tbody>';
+
+    resultado.resultados.forEach(r => {
+        if (r.exito) {
+            html += '<tr>';
+            html += `<td><strong>${r.metodo}</strong></td>`;
+            html += `<td><span style="color: #27ae60;">✓ Exitoso</span></td>`;
+            html += `<td><code style="font-size: 0.85em; max-width: 300px; display: block; overflow: hidden; text-overflow: ellipsis;">${r.polinomio ? r.polinomio.substring(0, 50) + '...' : 'N/A'}</code></td>`;
+            html += `<td>${(r.tiempo * 1000).toFixed(2)} ms</td>`;
+            html += '</tr>';
+        } else {
+            html += '<tr>';
+            html += `<td><strong>${r.metodo}</strong></td>`;
+            html += `<td><span style="color: #e74c3c;">✗ Falló</span></td>`;
+            html += `<td colspan="2">${r.error_msg || 'Error desconocido'}</td>`;
+            html += '</tr>';
+        }
+    });
+
+    html += '</tbody></table></div>';
+
+    // Análisis y conclusiones
+    html += '<div class="informe-analisis">';
+    html += '<h4>🏆 Análisis y Conclusiones</h4>';
+    html += '<div class="conclusiones">';
+    html += `<p><strong>⚡ Método más rápido:</strong> <span class="highlight">${resultado.mas_rapido}</span></p>`;
+    html += `<p><strong>📈 Métodos exitosos:</strong> ${resultado.estadisticas.exitosos} de ${resultado.estadisticas.total_metodos}</p>`;
+
+    html += '<div class="recomendaciones">';
+    html += '<h5>💡 Recomendaciones</h5>';
+    html += '<ul>';
+    html += '<li><strong>Vandermonde, Newton y Lagrange:</strong> Generan el mismo polinomio interpolador de grado n-1</li>';
+    html += '<li><strong>Spline Lineal:</strong> Conecta puntos con líneas rectas, más simple pero menos suave</li>';
+    html += '<li><strong>Spline Cúbico:</strong> Más suave y natural, recomendado para datos con variación continua</li>';
+    html += '</ul>';
+    html += '</div>';
+
+    if (resultado.estadisticas.fallidos > 0) {
+        html += `<p><strong>⚠️ Métodos que fallaron:</strong> ${resultado.estadisticas.fallidos}</p>`;
+    }
+
+    html += '</div></div></div>';
+
+    // Estilos
+    html += `
+    <style>
+    .informe-container { margin-top: 20px; }
+    .informe-analisis {
+        background: #f9f9f9; padding: 20px; border-radius: 8px;
+        margin-top: 20px; border-left: 4px solid #9b59b6;
+    }
+    .conclusiones p { margin: 10px 0; font-size: 1.05em; }
+    .highlight { color: #9b59b6; font-weight: bold; font-size: 1.1em; }
+    .recomendaciones {
+        background: white; padding: 15px; border-radius: 6px; margin-top: 15px;
+    }
+    .recomendaciones ul { margin: 10px 0; padding-left: 25px; }
+    .recomendaciones li { margin: 8px 0; line-height: 1.5; }
+    </style>
+    `;
+
+    resultadosDiv.innerHTML = html;
 }
 </script>
 {% endblock %}

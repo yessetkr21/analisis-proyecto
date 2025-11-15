@@ -15,7 +15,8 @@
         <button class="metodo-btn" onclick="cambiarMetodo('newton')">Newton-Raphson</button>
         <button class="metodo-btn" onclick="cambiarMetodo('secante')">Secante</button>
         <button class="metodo-btn" onclick="cambiarMetodo('raices-multiples')">Raíces Múltiples</button>
-        <button class="metodo-btn" onclick="cambiarMetodo('comparacion')">Comparar Todos</button>
+        <hr style="margin: 20px 0; border: 1px solid #e0e0e0;">
+        <button class="metodo-btn" onclick="cambiarMetodo('informe')" style="background: #27ae60; color: white;">📊 Generar Informe</button>
     </div>
 
     <div class="metodo-content">
@@ -131,48 +132,68 @@
             <div id="resultados-newton" class="results-section"></div>
         </div>
 
-        <!-- Comparación -->
-        <div id="comparacion" class="metodo-panel">
-            <h2>Comparar Todos los Métodos</h2>
+        <!-- Panel de Informe Comparativo -->
+        <div id="informe" class="metodo-panel">
+            <h2>📊 Informe Comparativo de Métodos</h2>
             <div class="help-box">
-                <h4>Ayuda</h4>
-                <p>Ejecuta todos los métodos con los mismos parámetros y compara resultados.</p>
-                <p>El informe mostrará cuál método convergió más rápido y con menor error.</p>
+                <h4>¿Qué hace el informe?</h4>
+                <p>Ejecuta TODOS los métodos del capítulo con los mismos parámetros y compara:</p>
+                <ul>
+                    <li>Número de iteraciones</li>
+                    <li>Error final alcanzado</li>
+                    <li>Raíz encontrada</li>
+                    <li>Tiempo de ejecución</li>
+                </ul>
+                <p><strong>Resultado:</strong> Identifica cuál método tuvo el mejor desempeño.</p>
             </div>
-            <form onsubmit="event.preventDefault(); compararMetodos();">
+
+            <form id="form-informe">
                 <div class="form-group">
                     <label>Función f(x):</label>
-                    <input type="text" id="comp-funcion" value="x**3 - 2*x - 5" required>
+                    <input type="text" name="funcion" value="x**3 - x - 2" required>
+                    <small>Ejemplo: x**2 - 4, sin(x) - x/2, exp(x) - 2</small>
                 </div>
+
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Xi:</label>
-                        <input type="number" step="any" id="comp-xi" value="2" required>
+                        <label>Intervalo Xi (Bisección/Regla Falsa):</label>
+                        <input type="number" step="any" name="xi" value="1" required>
                     </div>
                     <div class="form-group">
-                        <label>Xs:</label>
-                        <input type="number" step="any" id="comp-xs" value="3" required>
-                    </div>
-                    <div class="form-group">
-                        <label>x0:</label>
-                        <input type="number" step="any" id="comp-x0" value="2.5" required>
+                        <label>Intervalo Xs:</label>
+                        <input type="number" step="any" name="xs" value="2" required>
                     </div>
                 </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>X0 inicial (Newton/Punto Fijo/Secante):</label>
+                        <input type="number" step="any" name="x0" value="1.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label>X1 (Secante):</label>
+                        <input type="number" step="any" name="x1" value="2" required>
+                    </div>
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tolerancia:</label>
-                        <input type="text" id="comp-tol" value="0.00001" required>
+                        <input type="number" step="any" name="tol" value="1e-6" required>
                     </div>
                     <div class="form-group">
                         <label>Iteraciones máximas:</label>
-                        <input type="number" id="comp-niter" value="100" required>
+                        <input type="number" name="niter" value="100" required>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-success">Comparar Todos</button>
+
+                <button type="button" class="btn btn-success" onclick="generarInforme()">🚀 Generar Informe Comparativo</button>
             </form>
-            <div id="loading-comparacion" class="loading"><div class="spinner"></div></div>
-            <div id="resultados-comparacion" class="results-section"></div>
+
+            <div id="loading-informe" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-informe" class="results-section"></div>
         </div>
+
     </div>
 </div>
 

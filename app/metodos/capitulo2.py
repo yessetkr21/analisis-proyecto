@@ -49,29 +49,29 @@ def jacobi(A, b, x0, tol, niter):
 
             # Calcular error (norma infinito)
             error = np.linalg.norm(x1 - x0, np.inf)
-            errores.append(error)
+            errores.append(float(error))
 
             c += 1
             tabla_datos.append({
-                "iter": c,
+                "iter": int(c),
                 "x": x1.copy().tolist(),
-                "error": error
+                "error": float(error)
             })
 
             x0 = x1
 
-        converge = radio_espectral < 1
+        converge = bool(radio_espectral < 1)
 
         return {
-            "exito": error < tol,
+            "exito": bool(error < tol),
             "solucion": x0.tolist(),
-            "iteraciones": c,
+            "iteraciones": int(c),
             "errores": errores,
             "tabla": tabla_datos,
             "radio_espectral": float(radio_espectral),
             "converge": converge,
             "mensaje": f"Solución encontrada en {c} iteraciones" if error < tol else f"No convergió en {niter} iteraciones",
-            "error_final": error
+            "error_final": float(error)
         }
     except Exception as e:
         return {"exito": False, "mensaje": f"Error: {str(e)}"}
@@ -113,29 +113,29 @@ def gauss_seidel(A, b, x0, tol, niter):
 
             # Calcular error (norma infinito)
             error = np.linalg.norm(x1 - x0, np.inf)
-            errores.append(error)
+            errores.append(float(error))
 
             c += 1
             tabla_datos.append({
-                "iter": c,
+                "iter": int(c),
                 "x": x1.copy().tolist(),
-                "error": error
+                "error": float(error)
             })
 
             x0 = x1
 
-        converge = radio_espectral < 1
+        converge = bool(radio_espectral < 1)
 
         return {
-            "exito": error < tol,
+            "exito": bool(error < tol),
             "solucion": x0.tolist(),
-            "iteraciones": c,
+            "iteraciones": int(c),
             "errores": errores,
             "tabla": tabla_datos,
             "radio_espectral": float(radio_espectral),
             "converge": converge,
             "mensaje": f"Solución encontrada en {c} iteraciones" if error < tol else f"No convergió en {niter} iteraciones",
-            "error_final": error
+            "error_final": float(error)
         }
     except Exception as e:
         return {"exito": False, "mensaje": f"Error: {str(e)}"}
@@ -186,30 +186,30 @@ def sor(A, b, x0, tol, niter, w):
 
             # Calcular error (norma infinito)
             error = np.linalg.norm(x1 - x0, np.inf)
-            errores.append(error)
+            errores.append(float(error))
 
             c += 1
             tabla_datos.append({
-                "iter": c,
+                "iter": int(c),
                 "x": x1.copy().tolist(),
-                "error": error
+                "error": float(error)
             })
 
             x0 = x1
 
-        converge = radio_espectral < 1
+        converge = bool(radio_espectral < 1)
 
         return {
-            "exito": error < tol,
+            "exito": bool(error < tol),
             "solucion": x0.tolist(),
-            "iteraciones": c,
+            "iteraciones": int(c),
             "errores": errores,
             "tabla": tabla_datos,
             "radio_espectral": float(radio_espectral),
             "converge": converge,
-            "w": w,
+            "w": float(w),
             "mensaje": f"Solución encontrada en {c} iteraciones con w={w}" if error < tol else f"No convergió en {niter} iteraciones",
-            "error_final": error
+            "error_final": float(error)
         }
     except Exception as e:
         return {"exito": False, "mensaje": f"Error: {str(e)}"}

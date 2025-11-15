@@ -82,10 +82,10 @@ def biseccion(xi, xs, tol, niter, funcion_str):
             break
 
     tabla = {
-        "iter": iteraciones,
-        "xm": valores_xm,
-        "f_xm": valores_fm,
-        "error": errores
+        "Iteracion": iteraciones,
+        "Xm": valores_xm,
+        "f(Xm)": valores_fm,
+        "Error": errores
     }
 
     mensaje = f"Raíz aproximada: {xm:.10f} con error {error:.2e}" if c < niter else f"Se alcanzó el número máximo de iteraciones ({niter})"
@@ -174,10 +174,10 @@ def regla_falsa(xi, xs, tol, niter, funcion_str):
             break
 
     tabla = {
-        "iter": iteraciones,
-        "xm": valores_xm,
-        "f_xm": valores_fm,
-        "error": errores
+        "Iteracion": iteraciones,
+        "Xm": valores_xm,
+        "f(Xm)": valores_fm,
+        "Error": errores
     }
 
     mensaje = f"Raíz aproximada: {xm:.10f} con error {error:.2e}" if c < niter else f"Se alcanzó el número máximo de iteraciones ({niter})"
@@ -193,9 +193,16 @@ def regla_falsa(xi, xs, tol, niter, funcion_str):
     }
 
 
-def punto_fijo(x0, tol, niter, funcion_f, funcion_g):
+def punto_fijo(g_str, x0, tol, niter, funcion_f):
     """
     Método de Punto Fijo
+    
+    Parámetros:
+    g_str: Función de iteración g(x) tal que x = g(x)
+    x0: Valor inicial
+    tol: Tolerancia
+    niter: Número máximo de iteraciones
+    funcion_f: Función original f(x) = 0 (para referencia)
 
     Retorna: dict con 'tabla', 'exito', 'raiz', 'mensaje', 'iteraciones'
     """
@@ -203,7 +210,7 @@ def punto_fijo(x0, tol, niter, funcion_f, funcion_g):
 
     try:
         f_expr = sp.sympify(funcion_f)
-        g_expr = sp.sympify(funcion_g)
+        g_expr = sp.sympify(g_str)
         f = sp.lambdify(x_sym, f_expr, modules=['numpy', 'math'])
         g = sp.lambdify(x_sym, g_expr, modules=['numpy', 'math'])
     except Exception as e:
@@ -240,11 +247,10 @@ def punto_fijo(x0, tol, niter, funcion_f, funcion_g):
         c += 1
 
     tabla = {
-        "iter": iteraciones,
-        "xn": xn_vals,
-        "g_xn": gxn_vals,
-        "f_xn": fxn_vals,
-        "error": errores
+        "Iteracion": iteraciones,
+        "Xm": xn_vals,
+        "f(Xm)": fxn_vals,
+        "Error": errores
     }
 
     mensaje = f"Punto fijo aproximado: {xn1:.10f} con error {error:.2e}" if error <= tol else f"No convergió en {niter} iteraciones"
@@ -312,11 +318,10 @@ def newton_raphson(x0, tol, niter, funcion_str):
         errores.append(error)
 
     tabla = {
-        "iter": iteraciones,
-        "xn": xn_vals,
-        "f_xn": fn_vals,
-        "df_xn": dfn_vals,
-        "error": errores
+        "Iteracion": iteraciones,
+        "Xm": xn_vals,
+        "f(Xm)": fn_vals,
+        "Error": errores
     }
 
     if fn == 0:
@@ -360,6 +365,7 @@ def secante(x0, x1, tol, niter, funcion_str):
     f1 = f(x1)
 
     k = 0
+    error = tol + 1  # Inicializar error
     iteraciones.append(k)
     xn_vals.append(x1)
     fn_vals.append(f1)
@@ -398,10 +404,10 @@ def secante(x0, x1, tol, niter, funcion_str):
             break
 
     tabla = {
-        "iter": iteraciones,
-        "xn": xn_vals,
-        "f_xn": fn_vals,
-        "error": errores
+        "Iteracion": iteraciones,
+        "Xm": xn_vals,
+        "f(Xm)": fn_vals,
+        "Error": errores
     }
 
     if f1 == 0:
@@ -502,14 +508,16 @@ def raices_multiples(x0, tol, niter, funcion_str, metodo=2, multiplicidad=None):
             break
 
     tabla = {
-        "iter": iteraciones,
-        "xn": xn_vals,
-        "f_xn": fn_vals,
-        "df_xn": dfn_vals,
-        "error": errores
+        "Iteracion": iteraciones,
+        "Xm": xn_vals,
+        "f(Xm)": fn_vals,
+        "Error": errores
     }
 
-    if error < tol or abs(fn) < 1e-15:
+    # Verificar si encontramos la raíz
+    exito = (error < tol) or (abs(fn) < 1e-15)
+
+    if exito:
         mensaje = f"Raíz aproximada: {xn:.10f} con error {error:.2e}"
     else:
         mensaje = f"Se alcanzó el máximo de iteraciones ({niter})"
@@ -518,7 +526,7 @@ def raices_multiples(x0, tol, niter, funcion_str, metodo=2, multiplicidad=None):
     es_multiple = abs(fn) < 1e-10 and abs(dfn) < 1e-6
 
     return {
-        "exito": error < tol,
+        "exito": exito,
         "raiz": xn,
         "mensaje": mensaje,
         "iteraciones": c,

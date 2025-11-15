@@ -456,3 +456,44 @@ def evaluar_newton(Tabla, x_eval):
         resultado += Tabla[i, i+1] * producto
 
     return resultado
+
+
+def ejecutar_metodo(metodo, puntos_str):
+    """
+    Ejecuta un método de interpolación específico
+
+    Parámetros:
+    metodo: Nombre del método ('vandermonde', 'newton', 'lagrange', 'spline-lineal', 'spline-cubico')
+    puntos_str: String con puntos en formato "x1,y1;x2,y2;..."
+
+    Retorna: dict con resultado del método
+    """
+    x, y, error = validar_puntos(puntos_str)
+
+    if error:
+        return {"exito": False, "mensaje": error}
+
+    # Mapeo de métodos
+    metodos_map = {
+        'vandermonde': vandermonde,
+        'newton': newton_interpolante,
+        'lagrange': lagrange,
+        'spline-lineal': spline_lineal,
+        'spline-cubico': spline_cubico
+    }
+
+    if metodo not in metodos_map:
+        return {"exito": False, "mensaje": f"Método '{metodo}' no reconocido"}
+
+    # Ejecutar método
+    resultado = metodos_map[metodo](x, y)
+
+    # Agregar representación del polinomio para el informe
+    if resultado.get('exito'):
+        if 'polinomio_str' in resultado:
+            resultado['polinomio'] = resultado['polinomio_str']
+        elif 'segmentos' in resultado:
+            # Para splines, mostrar el primer segmento
+            resultado['polinomio'] = resultado['segmentos'][0]['polinomio']
+
+    return resultado
