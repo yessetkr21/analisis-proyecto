@@ -564,6 +564,23 @@ def informe_capitulo1():
         except Exception as e:
             resultados.append({'metodo': 'Secante', 'exito': False, 'error_msg': str(e)})
 
+        # 6. Raíces Múltiples
+        try:
+            inicio = time.time()
+            res = capitulo1.raices_multiples(x0, tol, niter, funcion)
+            tiempo = time.time() - inicio
+            if res['exito']:
+                resultados.append({
+                    'metodo': 'Raíces Múltiples',
+                    'raiz': res['raiz'],
+                    'iteraciones': res['iteraciones'],
+                    'error': res['error_final'],
+                    'tiempo': tiempo,
+                    'exito': True
+                })
+        except Exception as e:
+            resultados.append({'metodo': 'Raíces Múltiples', 'exito': False, 'error_msg': str(e)})
+
         # Filtrar solo métodos exitosos
         exitosos = [r for r in resultados if r.get('exito', False)]
 
