@@ -6,6 +6,48 @@ Incluye: Jacobi, Gauss-Seidel y SOR
 import numpy as np
 
 
+def calcular_metricas_error(x_actual, x_anterior):
+    """
+    Calcula las 5 métricas de error para sistemas de ecuaciones
+    
+    Retorna dict con:
+    - error_abs: ||x^(n) - x^(n-1)||_∞
+    - error_rel1: ||x^(n) - x^(n-1)|| / ||x^(n)||_∞
+    - error_rel2: ||x^(n) - x^(n-1)|| / ||x^(n-1)||_∞
+    - error_rel3: ||x^(n) - x^(n-1)|| / ||x^(n)||_∞ (alternativo)
+    - error_rel4: ||x^(n) - x^(n-1)|| / ||x^(n-1)||_∞ (alternativo)
+    """
+    diff = np.linalg.norm(x_actual - x_anterior, np.inf)
+    norm_actual = np.linalg.norm(x_actual, np.inf)
+    norm_anterior = np.linalg.norm(x_anterior, np.inf)
+    
+    error_abs = float(diff)
+    
+    # Error relativo 1: diferencia / norma actual
+    if norm_actual != 0:
+        error_rel1 = float(diff / norm_actual)
+    else:
+        error_rel1 = float(diff)
+    
+    # Error relativo 2: diferencia / norma anterior
+    if norm_anterior != 0:
+        error_rel2 = float(diff / norm_anterior)
+    else:
+        error_rel2 = float(diff)
+    
+    # Error relativo 3 y 4 son equivalentes a 1 y 2
+    error_rel3 = error_rel1
+    error_rel4 = error_rel2
+    
+    return {
+        "error_abs": error_abs,
+        "error_rel1": error_rel1,
+        "error_rel2": error_rel2,
+        "error_rel3": error_rel3,
+        "error_rel4": error_rel4
+    }
+
+
 def jacobi(A, b, x0, tol, niter):
     """
     Método de Jacobi para resolver sistemas de ecuaciones lineales
@@ -17,13 +59,12 @@ def jacobi(A, b, x0, tol, niter):
     tol: Tolerancia para el error
     niter: Número máximo de iteraciones
 
-    Retorna: dict con 'exito', 'solucion', 'iteraciones', 'errores', 'tabla', 'radio_espectral', 'converge'
+    Retorna: dict con 'exito', 'solucion', 'iteraciones', 'tabla', 'radio_espectral', 'converge'
     """
     try:
         n = len(A)
         c = 0
         error = tol + 1
-        errores = []
         tabla_datos = []
 
         # Descomposición de la matriz A
@@ -39,34 +80,43 @@ def jacobi(A, b, x0, tol, niter):
         tabla_datos.append({
             "iter": 0,
             "x": x0.copy().tolist(),
-            "error": None
+            "error_abs": None,
+            "error_rel1": None,
+            "error_rel2": None,
+            "error_rel3": None,
+            "error_rel4": None
         })
+
+        x_prev = x0.copy()
 
         while error > tol and c < niter:
             # Jacobi: x^(k+1) = T * x^(k) + C
             C = np.linalg.inv(D) @ b
-            x1 = T @ x0 + C
+            x1 = T @ x_prev + C
 
-            # Calcular error (norma infinito)
-            error = np.linalg.norm(x1 - x0, np.inf)
-            errores.append(float(error))
+            # Calcular las 5 métricas de error
+            metricas = calcular_metricas_error(x1, x_prev)
+            error = metricas["error_abs"]
 
             c += 1
             tabla_datos.append({
                 "iter": int(c),
                 "x": x1.copy().tolist(),
-                "error": float(error)
+                "error_abs": metricas["error_abs"],
+                "error_rel1": metricas["error_rel1"],
+                "error_rel2": metricas["error_rel2"],
+                "error_rel3": metricas["error_rel3"],
+                "error_rel4": metricas["error_rel4"]
             })
 
-            x0 = x1
+            x_prev = x1.copy()
 
         converge = bool(radio_espectral < 1)
 
         return {
             "exito": bool(error < tol),
-            "solucion": x0.tolist(),
+            "solucion": x_prev.tolist(),
             "iteraciones": int(c),
-            "errores": errores,
             "tabla": tabla_datos,
             "radio_espectral": float(radio_espectral),
             "converge": converge,
@@ -81,13 +131,12 @@ def gauss_seidel(A, b, x0, tol, niter):
     """
     Método de Gauss-Seidel para resolver sistemas de ecuaciones lineales
 
-    Retorna: dict con 'exito', 'solucion', 'iteraciones', 'errores', 'tabla', 'radio_espectral', 'converge'
+    Retorna: dict con 'exito', 'solucion', 'iteraciones', 'tabla', 'radio_espectral', 'converge'
     """
     try:
         n = len(A)
         c = 0
         error = tol + 1
-        errores = []
         tabla_datos = []
 
         # Descomposición de la matriz A
@@ -103,34 +152,43 @@ def gauss_seidel(A, b, x0, tol, niter):
         tabla_datos.append({
             "iter": 0,
             "x": x0.copy().tolist(),
-            "error": None
+            "error_abs": None,
+            "error_rel1": None,
+            "error_rel2": None,
+            "error_rel3": None,
+            "error_rel4": None
         })
+
+        x_prev = x0.copy()
 
         while error > tol and c < niter:
             # Gauss-Seidel: x^(k+1) = T * x^(k) + C
             C = np.linalg.inv(D - L) @ b
-            x1 = T @ x0 + C
+            x1 = T @ x_prev + C
 
-            # Calcular error (norma infinito)
-            error = np.linalg.norm(x1 - x0, np.inf)
-            errores.append(float(error))
+            # Calcular las 5 métricas de error
+            metricas = calcular_metricas_error(x1, x_prev)
+            error = metricas["error_abs"]
 
             c += 1
             tabla_datos.append({
                 "iter": int(c),
                 "x": x1.copy().tolist(),
-                "error": float(error)
+                "error_abs": metricas["error_abs"],
+                "error_rel1": metricas["error_rel1"],
+                "error_rel2": metricas["error_rel2"],
+                "error_rel3": metricas["error_rel3"],
+                "error_rel4": metricas["error_rel4"]
             })
 
-            x0 = x1
+            x_prev = x1.copy()
 
         converge = bool(radio_espectral < 1)
 
         return {
             "exito": bool(error < tol),
-            "solucion": x0.tolist(),
+            "solucion": x_prev.tolist(),
             "iteraciones": int(c),
-            "errores": errores,
             "tabla": tabla_datos,
             "radio_espectral": float(radio_espectral),
             "converge": converge,
@@ -151,7 +209,7 @@ def sor(A, b, x0, tol, niter, w):
        w = 1: Gauss-Seidel
        w > 1: Sobrerelajación
 
-    Retorna: dict con 'exito', 'solucion', 'iteraciones', 'errores', 'tabla', 'radio_espectral', 'converge', 'w'
+    Retorna: dict con 'exito', 'solucion', 'iteraciones', 'tabla', 'radio_espectral', 'converge', 'w'
     """
     try:
         if w <= 0 or w >= 2:
@@ -160,7 +218,6 @@ def sor(A, b, x0, tol, niter, w):
         n = len(A)
         c = 0
         error = tol + 1
-        errores = []
         tabla_datos = []
 
         # Descomposición de la matriz A
@@ -176,34 +233,43 @@ def sor(A, b, x0, tol, niter, w):
         tabla_datos.append({
             "iter": 0,
             "x": x0.copy().tolist(),
-            "error": None
+            "error_abs": None,
+            "error_rel1": None,
+            "error_rel2": None,
+            "error_rel3": None,
+            "error_rel4": None
         })
+
+        x_prev = x0.copy()
 
         while error > tol and c < niter:
             # SOR: x^(k+1) = T * x^(k) + C
             C = w * np.linalg.inv(D - w*L) @ b
-            x1 = T @ x0 + C
+            x1 = T @ x_prev + C
 
-            # Calcular error (norma infinito)
-            error = np.linalg.norm(x1 - x0, np.inf)
-            errores.append(float(error))
+            # Calcular las 5 métricas de error
+            metricas = calcular_metricas_error(x1, x_prev)
+            error = metricas["error_abs"]
 
             c += 1
             tabla_datos.append({
                 "iter": int(c),
                 "x": x1.copy().tolist(),
-                "error": float(error)
+                "error_abs": metricas["error_abs"],
+                "error_rel1": metricas["error_rel1"],
+                "error_rel2": metricas["error_rel2"],
+                "error_rel3": metricas["error_rel3"],
+                "error_rel4": metricas["error_rel4"]
             })
 
-            x0 = x1
+            x_prev = x1.copy()
 
         converge = bool(radio_espectral < 1)
 
         return {
             "exito": bool(error < tol),
-            "solucion": x0.tolist(),
+            "solucion": x_prev.tolist(),
             "iteraciones": int(c),
-            "errores": errores,
             "tabla": tabla_datos,
             "radio_espectral": float(radio_espectral),
             "converge": converge,

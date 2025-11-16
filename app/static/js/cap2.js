@@ -67,7 +67,7 @@ function mostrarResultados(metodo, resultado) {
     resultadosDiv.innerHTML = html;
 }
 
-// Crear tabla de iteraciones
+// Crear tabla de iteraciones con 5 métricas de error
 function crearTablaIteraciones(tabla) {
     if (!tabla || tabla.length === 0) return '';
 
@@ -79,21 +79,46 @@ function crearTablaIteraciones(tabla) {
     for (let i = 0; i < numVars; i++) {
         html += `<th>x${i+1}</th>`;
     }
-    html += '<th>Error</th>';
+    // Encabezados de las 5 métricas de error
+    html += '<th>E. Absoluto</th>';
+    html += '<th>E. Relativo 1</th>';
+    html += '<th>E. Relativo 2</th>';
+    html += '<th>E. Relativo 3</th>';
+    html += '<th>E. Relativo 4</th>';
     html += '</tr></thead><tbody>';
 
     // Filas
     tabla.forEach(fila => {
         html += '<tr>';
-        html += `<td>${fila.iter}</td>`;
+        html += `<td><strong>${fila.iter}</strong></td>`;
         fila.x.forEach(val => {
             html += `<td>${val.toFixed(6)}</td>`;
         });
-        html += `<td>${fila.error !== null ? fila.error.toExponential(4) : '-'}</td>`;
+        // Mostrar las 5 métricas de error
+        html += `<td>${fila.error_abs !== null ? fila.error_abs.toExponential(4) : '-'}</td>`;
+        html += `<td>${fila.error_rel1 !== null ? fila.error_rel1.toExponential(4) : '-'}</td>`;
+        html += `<td>${fila.error_rel2 !== null ? fila.error_rel2.toExponential(4) : '-'}</td>`;
+        html += `<td>${fila.error_rel3 !== null ? fila.error_rel3.toExponential(4) : '-'}</td>`;
+        html += `<td>${fila.error_rel4 !== null ? fila.error_rel4.toExponential(4) : '-'}</td>`;
         html += '</tr>';
     });
 
     html += '</tbody></table></div>';
+    
+    // Agregar leyenda de métricas
+    html += `
+    <div class="metricas-legend">
+        <h4>Explicación de Métricas de Error (norma infinito):</h4>
+        <ul>
+            <li><strong>E. Absoluto:</strong> ||x<sup>(n)</sup> - x<sup>(n-1)</sup>||<sub>∞</sub></li>
+            <li><strong>E. Relativo 1:</strong> ||x<sup>(n)</sup> - x<sup>(n-1)</sup>|| / ||x<sup>(n)</sup>||<sub>∞</sub></li>
+            <li><strong>E. Relativo 2:</strong> ||x<sup>(n)</sup> - x<sup>(n-1)</sup>|| / ||x<sup>(n-1)</sup>||<sub>∞</sub></li>
+            <li><strong>E. Relativo 3:</strong> Equivalente a E. Relativo 1</li>
+            <li><strong>E. Relativo 4:</strong> Equivalente a E. Relativo 2</li>
+        </ul>
+    </div>
+    `;
+    
     return html;
 }
 
