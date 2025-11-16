@@ -5,8 +5,8 @@ Incluye: Vandermonde, Newton, Lagrange, Spline Lineal y Spline Cúbico
 
 import numpy as np
 import sympy as sp
-
-
+ 
+ 
 def vandermonde(x, y):
     """
     Método de Vandermonde para interpolación polinomial
