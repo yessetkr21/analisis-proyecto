@@ -11,6 +11,7 @@
     <p><strong>Matriz A:</strong> Separa filas con ";" y columnas con ",". Ejemplo: <code>10,1,1;2,10,1;2,2,10</code></p>
     <p><strong>Vector b:</strong> Separa elementos con ",". Ejemplo: <code>12,13,14</code></p>
     <p><strong>Vector x0:</strong> (Opcional) Vector inicial. Si no se proporciona, usa el vector cero.</p>
+    <p><strong>⚠️ IMPORTANTE - Tolerancia:</strong> Solo son válidos <code>5e-X</code> (Cifras Significativas) o <code>0.5e-X</code> (Decimales Correctos). Otros formatos como <code>1e-5</code> se tratarán como tolerancia genérica.</p>
 </div>
 
 <div class="metodos-container">
@@ -48,17 +49,19 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tolerancia:</label>
-                        <input type="text" name="tol" value="0.000001" required>
+                        <input type="text" name="tol" placeholder="5e-7 o 0.5e-10" required>
+                        <small>Ejemplos: 5e-7 (Cifras Sig.) o 0.5e-10 (Decimales Correctos)</small>
                     </div>
                     <div class="form-group">
                         <label>Iteraciones máximas:</label>
                         <input type="number" name="niter" value="100" required>
                     </div>
                 </div>
-                <button type="button" class="btn btn-primary" onclick="ejecutarMetodoCap2('jacobi')">Ejecutar</button>
+                <button type="button" class="btn btn-primary" onclick="ejecutarMetodo('jacobi')">Ejecutar</button>
             </form>
             <div id="loading-jacobi" class="loading"><div class="spinner"></div></div>
             <div id="resultados-jacobi" class="results-section"></div>
+            <div id="grafica-jacobi" class="grafica-container"></div>
         </div>
 
         <!-- Gauss-Seidel -->
@@ -80,17 +83,19 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tolerancia:</label>
-                        <input type="text" name="tol" value="0.000001" required>
+                        <input type="text" name="tol" placeholder="5e-7 o 0.5e-10" required>
+                        <small>Ejemplos: 5e-7 (Cifras Sig.) o 0.5e-10 (Decimales Correctos)</small>
                     </div>
                     <div class="form-group">
                         <label>Iteraciones máximas:</label>
                         <input type="number" name="niter" value="100" required>
                     </div>
                 </div>
-                <button type="button" class="btn btn-primary" onclick="ejecutarMetodoCap2('gauss-seidel')">Ejecutar</button>
+                <button type="button" class="btn btn-primary" onclick="ejecutarMetodo('gauss-seidel')">Ejecutar</button>
             </form>
             <div id="loading-gauss-seidel" class="loading"><div class="spinner"></div></div>
             <div id="resultados-gauss-seidel" class="results-section"></div>
+            <div id="grafica-gauss-seidel" class="grafica-container"></div>
         </div>
 
         <!-- SOR -->
@@ -128,17 +133,19 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tolerancia:</label>
-                        <input type="text" name="tol" value="0.000001" required>
+                        <input type="text" name="tol" placeholder="5e-7 o 0.5e-10" required>
+                        <small>Ejemplos: 5e-7 (Cifras Sig.) o 0.5e-10 (Decimales Correctos)</small>
                     </div>
                     <div class="form-group">
                         <label>Iteraciones máximas:</label>
                         <input type="number" name="niter" value="100" required>
                     </div>
                 </div>
-                <button type="button" class="btn btn-primary" onclick="ejecutarMetodoCap2('sor')">Ejecutar</button>
+                <button type="button" class="btn btn-primary" onclick="ejecutarMetodo('sor')">Ejecutar</button>
             </form>
             <div id="loading-sor" class="loading"><div class="spinner"></div></div>
             <div id="resultados-sor" class="results-section"></div>
+            <div id="grafica-sor" class="grafica-container"></div>
         </div>
 
         <!-- Panel de Informe Comparativo Cap 2 -->
@@ -184,7 +191,8 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tolerancia:</label>
-                        <input type="number" step="any" name="tol" value="1e-6" required>
+                        <input type="text" name="tol" placeholder="5e-7 o 0.5e-10" required>
+                        <small>Ejemplos: 5e-7 (Cifras Sig.) o 0.5e-10 (Decimales Correctos)</small>
                     </div>
                     <div class="form-group">
                         <label>Iteraciones máximas:</label>
@@ -204,227 +212,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-function cambiarMetodo(metodo) {
-    document.querySelectorAll('.metodo-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById(metodo).classList.add('active');
-    document.querySelectorAll('.metodo-btn').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
-}
-
-async function ejecutarMetodoCap2(metodo) {
-    const form = document.getElementById(`form-${metodo}`);
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData);
-
-    document.getElementById(`loading-${metodo}`).classList.add('show');
-    document.getElementById(`resultados-${metodo}`).classList.remove('show');
-
-    try {
-        const response = await fetch(`/api/capitulo2/${metodo}`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-
-        const resultado = await response.json();
-        mostrarResultadosCap2(metodo, resultado);
-    } catch (error) {
-        mostrarError(metodo, error.message);
-    } finally {
-        document.getElementById(`loading-${metodo}`).classList.remove('show');
-    }
-}
-
-function mostrarResultadosCap2(metodo, resultado) {
-    const div = document.getElementById(`resultados-${metodo}`);
-    div.classList.add('show');
-
-    if (!resultado.exito) {
-        div.innerHTML = `<div class="result-message error">${resultado.mensaje}</div>`;
-        return;
-    }
-
-    let html = `<div class="result-message success">${resultado.mensaje}</div>`;
-    html += `<div class="result-stats">`;
-    html += `<p><strong>Solución:</strong> x = [${resultado.solucion.map(x => x.toFixed(6)).join(', ')}]</p>`;
-    html += `<p><strong>Iteraciones:</strong> ${resultado.iteraciones}</p>`;
-    html += `<p><strong>Radio Espectral:</strong> ${resultado.radio_espectral.toFixed(8)}</p>`;
-    html += `<p><strong>Converge:</strong> ${resultado.converge ? 'Sí' : 'No'} (ρ < 1)</p>`;
-    html += `</div>`;
-
-    // Agregar tabla de iteraciones
-    if (resultado.tabla && resultado.tabla.length > 0) {
-        html += crearTablaCap2(resultado.tabla);
-    }
-
-    div.innerHTML = html;
-}
-
-function crearTablaCap2(tabla) {
-    if (!tabla || tabla.length === 0) return '';
-
-    const n = tabla[0].x.length; // Número de variables
-
-    let html = '<div class="table-container"><table><thead><tr>';
-    html += '<th>Iteración</th>';
-    for (let i = 0; i < n; i++) {
-        html += `<th>x${i + 1}</th>`;
-    }
-    // Encabezados para las 5 métricas de error
-    html += '<th>E. Absoluto</th>';
-    html += '<th>E. Relativo 1</th>';
-    html += '<th>E. Relativo 2</th>';
-    html += '<th>E. Relativo 3</th>';
-    html += '<th>E. Relativo 4</th>';
-    html += '</tr></thead><tbody>';
-
-    // Filas
-    tabla.forEach(fila => {
-        html += '<tr>';
-        html += `<td><strong>${fila.iter}</strong></td>`;
-        fila.x.forEach(val => {
-            html += `<td>${val.toFixed(6)}</td>`;
-        });
-        // Mostrar las 5 métricas de error
-        const ea = fila.error_abs !== null && fila.error_abs !== undefined ? fila.error_abs.toExponential(4) : '-';
-        const er1 = fila.error_rel1 !== null && fila.error_rel1 !== undefined ? fila.error_rel1.toExponential(4) : '-';
-        const er2 = fila.error_rel2 !== null && fila.error_rel2 !== undefined ? fila.error_rel2.toExponential(4) : '-';
-        const er3 = fila.error_rel3 !== null && fila.error_rel3 !== undefined ? fila.error_rel3.toExponential(4) : '-';
-        const er4 = fila.error_rel4 !== null && fila.error_rel4 !== undefined ? fila.error_rel4.toExponential(4) : '-';
-        html += `<td>${ea}</td>`;
-        html += `<td>${er1}</td>`;
-        html += `<td>${er2}</td>`;
-        html += `<td>${er3}</td>`;
-        html += `<td>${er4}</td>`;
-        html += '</tr>';
-    });
-
-    html += '</tbody></table></div>';
-    
-    // Agregar leyenda de métricas
-    html += `
-    <div class="metricas-legend">
-        <h4>Explicación de Métricas de Error (norma infinito):</h4>
-        <ul>
-            <li><strong>E. Absoluto:</strong> ||x<sup>(n)</sup> - x<sup>(n-1)</sup>||<sub>∞</sub></li>
-            <li><strong>E. Relativo 1:</strong> ||x<sup>(n)</sup> - x<sup>(n-1)</sup>|| / ||x<sup>(n)</sup>||<sub>∞</sub></li>
-            <li><strong>E. Relativo 2:</strong> ||x<sup>(n)</sup> - x<sup>(n-1)</sup>|| / ||x<sup>(n-1)</sup>||<sub>∞</sub></li>
-            <li><strong>E. Relativo 3:</strong> Equivalente a E. Relativo 1</li>
-            <li><strong>E. Relativo 4:</strong> Equivalente a E. Relativo 2</li>
-        </ul>
-    </div>
-    `;
-    
-    return html;
-}
-
-function mostrarError(metodo, mensaje) {
-    const div = document.getElementById(`resultados-${metodo}`);
-    div.classList.add('show');
-    div.innerHTML = `<div class="result-message error">Error: ${mensaje}</div>`;
-}
-
-// ===== INFORME COMPARATIVO CAPÍTULO 2 =====
-async function generarInformeCap2() {
-    const form = document.getElementById('form-informe-cap2');
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData);
-
-    const loadingDiv = document.getElementById('loading-informe-cap2');
-    const resultadosDiv = document.getElementById('resultados-informe-cap2');
-
-    loadingDiv.classList.add('show');
-    resultadosDiv.classList.remove('show');
-
-    try {
-        const response = await fetch('/api/capitulo2/informe', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-
-        const resultado = await response.json();
-        mostrarInformeCap2(resultado);
-    } catch (error) {
-        resultadosDiv.classList.add('show');
-        resultadosDiv.innerHTML = `<div class="result-message error">Error: ${error.message}</div>`;
-    } finally {
-        loadingDiv.classList.remove('show');
-    }
-}
-
-function mostrarInformeCap2(resultado) {
-    const resultadosDiv = document.getElementById('resultados-informe-cap2');
-    resultadosDiv.classList.add('show');
-
-    if (!resultado.exito) {
-        resultadosDiv.innerHTML = `<div class="result-message error">${resultado.mensaje}</div>`;
-        return;
-    }
-
-    let html = '<div class="informe-container">';
-    html += '<h3>📊 Resultados de la Comparación</h3>';
-
-    // Tabla comparativa
-    html += '<div class="table-container"><table>';
-    html += '<thead><tr>';
-    html += '<th>Método</th><th>Estado</th><th>Iteraciones</th><th>Error Final</th>';
-    html += '<th>Radio Espectral</th><th>Converge</th><th>Tiempo</th>';
-    html += '</tr></thead><tbody>';
-
-    resultado.resultados.forEach(r => {
-        if (r.exito) {
-            html += '<tr>';
-            html += `<td><strong>${r.metodo}</strong></td>`;
-            html += `<td><span style="color: #27ae60;">✓ Exitoso</span></td>`;
-            html += `<td>${r.iteraciones}</td>`;
-            html += `<td>${r.error.toExponential(4)}</td>`;
-            html += `<td>${r.radio_espectral.toFixed(8)}</td>`;
-            html += `<td>${r.converge ? '<span style="color: #27ae60;">Sí (ρ < 1)</span>' : '<span style="color: #e74c3c;">No (ρ ≥ 1)</span>'}</td>`;
-            html += `<td>${(r.tiempo * 1000).toFixed(2)} ms</td>`;
-            html += '</tr>';
-        } else {
-            html += '<tr>';
-            html += `<td><strong>${r.metodo}</strong></td>`;
-            html += `<td><span style="color: #e74c3c;">✗ Falló</span></td>`;
-            html += `<td colspan="5">${r.error_msg || 'No convergió'}</td>`;
-            html += '</tr>';
-        }
-    });
-
-    html += '</tbody></table></div>';
-
-    // Análisis y conclusiones
-    html += '<div class="informe-analisis">';
-    html += '<h4>🏆 Análisis y Conclusiones</h4>';
-    html += '<div class="conclusiones">';
-    html += `<p><strong>⚡ Método más rápido (menos iteraciones):</strong> <span class="highlight">${resultado.mejor_iteraciones}</span></p>`;
-    html += `<p><strong>🎯 Mejor método (menor error):</strong> <span class="highlight">${resultado.mejor_error}</span></p>`;
-    html += `<p><strong>📈 Métodos exitosos:</strong> ${resultado.estadisticas.exitosos} de ${resultado.estadisticas.total_metodos}</p>`;
-
-    if (resultado.estadisticas.fallidos > 0) {
-        html += `<p><strong>⚠️ Métodos que fallaron:</strong> ${resultado.estadisticas.fallidos}</p>`;
-    }
-
-    html += '<p class="nota">Nota: El radio espectral indica si el método puede converger (ρ < 1 garantiza convergencia).</p>';
-    html += '</div></div></div>';
-
-    // Estilos
-    html += `
-    <style>
-    .informe-container { margin-top: 20px; }
-    .informe-analisis {
-        background: #f9f9f9; padding: 20px; border-radius: 8px;
-        margin-top: 20px; border-left: 4px solid #27ae60;
-    }
-    .conclusiones p { margin: 10px 0; font-size: 1.05em; }
-    .highlight { color: #27ae60; font-weight: bold; font-size: 1.1em; }
-    .nota { font-size: 0.9em; color: #666; font-style: italic; margin-top: 15px; }
-    </style>
-    `;
-
-    resultadosDiv.innerHTML = html;
-}
-</script>
+<script src="{{ url_for('static', filename='js/cap2.js') }}"></script>
 {% endblock %}

@@ -31,6 +31,11 @@ async function ejecutarMetodo(metodo) {
 
         const resultado = await response.json();
         mostrarResultados(metodo, resultado);
+
+        // Graficar convergencia si el resultado fue exitoso
+        if (resultado.exito && resultado.tabla) {
+            await graficarConvergencia(resultado, metodo);
+        }
     } catch (error) {
         mostrarError(metodo, error.message);
     } finally {
@@ -65,6 +70,11 @@ function mostrarResultados(metodo, resultado) {
     }
 
     resultadosDiv.innerHTML = html;
+
+    // Graficar convergencia si el resultado fue exitoso
+    if (resultado.exito && resultado.tabla) {
+        graficarConvergencia(resultado, metodo);
+    }
 }
 
 // Crear tabla de iteraciones con 5 métricas de error
@@ -123,13 +133,13 @@ function crearTablaIteraciones(tabla) {
 }
 
 // Generar informe comparativo del Capítulo 2
-async function generarInforme() {
-    const form = document.getElementById('form-informe');
+async function generarInformeCap2() {
+    const form = document.getElementById('form-informe-cap2');
     const formData = new FormData(form);
     const data = Object.fromEntries(formData);
 
-    mostrarLoading('informe', true);
-    document.getElementById('resultados-informe').classList.remove('show');
+    mostrarLoading('informe-cap2', true);
+    document.getElementById('resultados-informe-cap2').classList.remove('show');
 
     try {
         const response = await fetch('/api/capitulo2/informe', {
@@ -139,16 +149,16 @@ async function generarInforme() {
         });
 
         const resultado = await response.json();
-        mostrarInforme(resultado);
+        mostrarInformeCap2(resultado);
     } catch (error) {
-        mostrarError('informe', error.message);
+        mostrarErrorInforme('informe-cap2', error.message);
     } finally {
-        mostrarLoading('informe', false);
+        mostrarLoading('informe-cap2', false);
     }
 }
 
-function mostrarInforme(resultado) {
-    const resultadosDiv = document.getElementById('resultados-informe');
+function mostrarInformeCap2(resultado) {
+    const resultadosDiv = document.getElementById('resultados-informe-cap2');
     resultadosDiv.classList.add('show');
 
     if (!resultado.exito) {
@@ -237,6 +247,14 @@ function mostrarInforme(resultado) {
     resultadosDiv.innerHTML = html;
 }
 
+function mostrarErrorInforme(metodo, mensaje) {
+    const resultadosDiv = document.getElementById(`resultados-${metodo}`);
+    if (resultadosDiv) {
+        resultadosDiv.classList.add('show');
+        resultadosDiv.innerHTML = `<div class="result-message error">Error: ${mensaje}</div>`;
+    }
+}
+
 // Funciones auxiliares
 function mostrarLoading(metodo, mostrar) {
     const loadingDiv = document.getElementById(`loading-${metodo}`);
@@ -257,5 +275,119 @@ function mostrarError(metodo, mensaje) {
     if (resultadosDiv) {
         resultadosDiv.classList.add('show');
         resultadosDiv.innerHTML = `<div class="result-message error">Error: ${mensaje}</div>`;
+    }
+}
+
+// Objeto para almacenar calculadoras de Desmos por método
+let desmosCalculators = {};
+
+// Graficar convergencia con Desmos
+async function graficarConvergencia(resultado, metodo) {
+    try {
+        // Verificar que exista la tabla de datos
+        if (!resultado.tabla || resultado.tabla.length === 0) {
+            console.log('No hay datos para graficar');
+            return;
+        }
+
+        // Obtener el contenedor específico del método
+        const graficaDiv = document.getElementById(`grafica-${metodo}`);
+        if (!graficaDiv) {
+            console.error(`No se encontró contenedor de gráfica para método: ${metodo}`);
+            return;
+        }
+
+        // Determinar el tipo de error según el resultado
+        const tipoError = resultado.tipo_error || 'absoluto';
+
+        // Generar puntos para graficar
+        const tabla_datos = resultado.tabla;
+        const iteraciones = [];
+        const errores = [];
+
+        tabla_datos.forEach(fila => {
+            if (fila.error_abs !== null && fila.error_abs !== undefined) {
+                iteraciones.push(fila.iter);
+                // Seleccionar el tipo de error apropiado
+                if (tipoError === 'relativo') {
+                    errores.push(fila.error_rel1);
+                } else {
+                    errores.push(fila.error_abs);
+                }
+            }
+        });
+
+        if (iteraciones.length === 0) {
+            console.log('No hay suficientes datos para graficar');
+            return;
+        }
+
+        // Crear calculadora de Desmos si no existe
+        if (!desmosCalculators[metodo]) {
+            graficaDiv.innerHTML = '';
+            desmosCalculators[metodo] = Desmos.GraphingCalculator(graficaDiv, {
+                keypad: false,
+                settingsMenu: false,
+                expressionsTopbar: false,
+                border: false,
+                lockViewport: false,
+                expressions: true,
+                zoomButtons: true,
+                expressionsCollapsed: false
+            });
+        } else {
+            desmosCalculators[metodo].setBlank();
+        }
+
+        const desmosCalculator = desmosCalculators[metodo];
+
+        // Crear puntos para la gráfica (iteración, error)
+        const puntos = iteraciones.map((iter, idx) => `(${iter}, ${errores[idx]})`).join(', ');
+
+        // Agregar puntos de convergencia
+        desmosCalculator.setExpression({
+            id: 'puntos',
+            latex: `L = [${puntos}]`,
+            color: '#2E7D32',
+            pointSize: 8,
+            lineWidth: 2,
+            lines: true,
+            points: true
+        });
+
+        // Agregar línea de tolerancia si existe
+        if (resultado.error_final !== undefined) {
+            const tol = parseFloat(resultado.error_final);
+            desmosCalculator.setExpression({
+                id: 'tolerancia',
+                latex: `y = ${tol}`,
+                color: '#C62828',
+                lineStyle: Desmos.Styles.DASHED,
+                lineWidth: 2
+            });
+        }
+
+        // Ajustar vista
+        const maxError = Math.max(...errores.filter(e => e !== null));
+        const minError = Math.min(...errores.filter(e => e !== null && e > 0));
+
+        desmosCalculator.setMathBounds({
+            left: -0.5,
+            right: Math.max(...iteraciones) + 1,
+            bottom: minError > 0 ? minError * 0.1 : 0,
+            top: maxError * 1.2
+        });
+
+        // Agregar título
+        const tipoErrorLabel = tipoError === 'relativo' ? 'Error Relativo' : 'Error Absoluto';
+        desmosCalculator.setExpression({
+            id: 'titulo',
+            latex: `\\text{Convergencia: ${tipoErrorLabel}}`,
+            color: '#000000',
+            hidden: true
+        });
+
+    } catch (error) {
+        console.error('Error al graficar convergencia:', error);
     }
 }

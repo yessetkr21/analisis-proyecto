@@ -48,7 +48,7 @@ def calcular_metricas_error(x_actual, x_anterior):
     }
 
 
-def jacobi(A, b, x0, tol, niter):
+def jacobi(A, b, x0, tol, niter, tol_str=None):
     """
     Método de Jacobi para resolver sistemas de ecuaciones lineales
 
@@ -58,9 +58,22 @@ def jacobi(A, b, x0, tol, niter):
     x0: Vector inicial (numpy array)
     tol: Tolerancia para el error
     niter: Número máximo de iteraciones
+    tol_str: String de tolerancia para detectar tipo de error
 
-    Retorna: dict con 'exito', 'solucion', 'iteraciones', 'tabla', 'radio_espectral', 'converge'
+    Retorna: dict con 'exito', 'solucion', 'iteraciones', 'tabla', 'radio_espectral', 'converge', 'tipo_error'
     """
+    # Detectar tipo de error usando el string original de tolerancia
+    if tol_str is None:
+        tol_str = str(tol)
+
+    # Detectar el tipo de error
+    if tol_str.startswith(("5e", "5E", "5.0e", "5.0E")):
+        tipo_error = "relativo"  # Cifras Significativas
+    elif tol_str.startswith(("0.5e", "0.5E")):
+        tipo_error = "absoluto"  # Decimales Correctos
+    else:
+        tipo_error = "ninguno"  # No es ninguno de los dos tipos específicos
+
     try:
         n = len(A)
         c = 0
@@ -96,7 +109,12 @@ def jacobi(A, b, x0, tol, niter):
 
             # Calcular las 5 métricas de error
             metricas = calcular_metricas_error(x1, x_prev)
-            error = metricas["error_abs"]
+
+            # Seleccionar error según tipo
+            if tipo_error == "relativo":
+                error = metricas["error_rel1"]
+            else:
+                error = metricas["error_abs"]
 
             c += 1
             tabla_datos.append({
@@ -120,6 +138,7 @@ def jacobi(A, b, x0, tol, niter):
             "tabla": tabla_datos,
             "radio_espectral": float(radio_espectral),
             "converge": converge,
+            "tipo_error": tipo_error,
             "mensaje": f"Solución encontrada en {c} iteraciones" if error < tol else f"No convergió en {niter} iteraciones",
             "error_final": float(error)
         }
@@ -127,12 +146,32 @@ def jacobi(A, b, x0, tol, niter):
         return {"exito": False, "mensaje": f"Error: {str(e)}"}
 
 
-def gauss_seidel(A, b, x0, tol, niter):
+def gauss_seidel(A, b, x0, tol, niter, tol_str=None):
     """
     Método de Gauss-Seidel para resolver sistemas de ecuaciones lineales
 
-    Retorna: dict con 'exito', 'solucion', 'iteraciones', 'tabla', 'radio_espectral', 'converge'
+    Parámetros:
+    A: Matriz de coeficientes (numpy array)
+    b: Vector de términos independientes (numpy array)
+    x0: Vector inicial (numpy array)
+    tol: Tolerancia para el error
+    niter: Número máximo de iteraciones
+    tol_str: String de tolerancia para detectar tipo de error
+
+    Retorna: dict con 'exito', 'solucion', 'iteraciones', 'tabla', 'radio_espectral', 'converge', 'tipo_error'
     """
+    # Detectar tipo de error usando el string original de tolerancia
+    if tol_str is None:
+        tol_str = str(tol)
+
+    # Detectar el tipo de error
+    if tol_str.startswith(("5e", "5E", "5.0e", "5.0E")):
+        tipo_error = "relativo"  # Cifras Significativas
+    elif tol_str.startswith(("0.5e", "0.5E")):
+        tipo_error = "absoluto"  # Decimales Correctos
+    else:
+        tipo_error = "ninguno"  # No es ninguno de los dos tipos específicos
+
     try:
         n = len(A)
         c = 0
@@ -168,7 +207,12 @@ def gauss_seidel(A, b, x0, tol, niter):
 
             # Calcular las 5 métricas de error
             metricas = calcular_metricas_error(x1, x_prev)
-            error = metricas["error_abs"]
+
+            # Seleccionar error según tipo
+            if tipo_error == "relativo":
+                error = metricas["error_rel1"]
+            else:
+                error = metricas["error_abs"]
 
             c += 1
             tabla_datos.append({
@@ -192,6 +236,7 @@ def gauss_seidel(A, b, x0, tol, niter):
             "tabla": tabla_datos,
             "radio_espectral": float(radio_espectral),
             "converge": converge,
+            "tipo_error": tipo_error,
             "mensaje": f"Solución encontrada en {c} iteraciones" if error < tol else f"No convergió en {niter} iteraciones",
             "error_final": float(error)
         }
@@ -199,18 +244,36 @@ def gauss_seidel(A, b, x0, tol, niter):
         return {"exito": False, "mensaje": f"Error: {str(e)}"}
 
 
-def sor(A, b, x0, tol, niter, w):
+def sor(A, b, x0, tol, niter, w, tol_str=None):
     """
     Método SOR (Successive Over-Relaxation) para resolver sistemas de ecuaciones lineales
 
-    Parámetros adicionales:
+    Parámetros:
+    A: Matriz de coeficientes (numpy array)
+    b: Vector de términos independientes (numpy array)
+    x0: Vector inicial (numpy array)
+    tol: Tolerancia para el error
+    niter: Número máximo de iteraciones
     w: Factor de relajación (0 < w < 2)
        w < 1: Subrelajación
        w = 1: Gauss-Seidel
        w > 1: Sobrerelajación
+    tol_str: String de tolerancia para detectar tipo de error
 
-    Retorna: dict con 'exito', 'solucion', 'iteraciones', 'tabla', 'radio_espectral', 'converge', 'w'
+    Retorna: dict con 'exito', 'solucion', 'iteraciones', 'tabla', 'radio_espectral', 'converge', 'w', 'tipo_error'
     """
+    # Detectar tipo de error usando el string original de tolerancia
+    if tol_str is None:
+        tol_str = str(tol)
+
+    # Detectar el tipo de error
+    if tol_str.startswith(("5e", "5E", "5.0e", "5.0E")):
+        tipo_error = "relativo"  # Cifras Significativas
+    elif tol_str.startswith(("0.5e", "0.5E")):
+        tipo_error = "absoluto"  # Decimales Correctos
+    else:
+        tipo_error = "ninguno"  # No es ninguno de los dos tipos específicos
+
     try:
         if w <= 0 or w >= 2:
             return {"exito": False, "mensaje": "El factor de relajación w debe estar entre 0 y 2"}
@@ -249,7 +312,12 @@ def sor(A, b, x0, tol, niter, w):
 
             # Calcular las 5 métricas de error
             metricas = calcular_metricas_error(x1, x_prev)
-            error = metricas["error_abs"]
+
+            # Seleccionar error según tipo
+            if tipo_error == "relativo":
+                error = metricas["error_rel1"]
+            else:
+                error = metricas["error_abs"]
 
             c += 1
             tabla_datos.append({
@@ -274,6 +342,7 @@ def sor(A, b, x0, tol, niter, w):
             "radio_espectral": float(radio_espectral),
             "converge": converge,
             "w": float(w),
+            "tipo_error": tipo_error,
             "mensaje": f"Solución encontrada en {c} iteraciones con w={w}" if error < tol else f"No convergió en {niter} iteraciones",
             "error_final": float(error)
         }
@@ -331,24 +400,65 @@ def es_diagonalmente_dominante(A):
     return True
 
 
-def comparar_metodos_cap2(A, b, x0, tol, niter, w=1.5):
+def generar_puntos_grafica_convergencia(tabla_datos, tipo_error="absoluto"):
+    """
+    Genera puntos para graficar la convergencia de un método iterativo
+
+    Parámetros:
+    tabla_datos: Lista de diccionarios con datos de cada iteración
+    tipo_error: Tipo de error a graficar ("absoluto" o "relativo")
+
+    Retorna:
+    iteraciones: Lista de números de iteración
+    errores: Lista de valores de error correspondientes
+    """
+    iteraciones = []
+    errores = []
+
+    for dato in tabla_datos:
+        iter_num = dato.get("iter", 0)
+
+        # Seleccionar el tipo de error apropiado
+        if tipo_error == "relativo":
+            error_val = dato.get("error_rel1")
+        else:
+            error_val = dato.get("error_abs")
+
+        # Solo agregar si el error no es None
+        if error_val is not None:
+            iteraciones.append(iter_num)
+            errores.append(error_val)
+
+    return iteraciones, errores
+
+
+def comparar_metodos_cap2(A, b, x0, tol, niter, w=1.5, tol_str=None):
     """
     Compara los tres métodos del capítulo 2 para un mismo problema
+
+    Parámetros:
+    A: Matriz de coeficientes (numpy array)
+    b: Vector de términos independientes (numpy array)
+    x0: Vector inicial (numpy array)
+    tol: Tolerancia para el error
+    niter: Número máximo de iteraciones
+    w: Factor de relajación para SOR
+    tol_str: String de tolerancia para detectar tipo de error
 
     Retorna: dict con resultados de cada método y análisis comparativo
     """
     resultados = {}
 
     # Ejecutar Jacobi
-    res_jacobi = jacobi(A, b, x0.copy(), tol, niter)
+    res_jacobi = jacobi(A, b, x0.copy(), tol, niter, tol_str)
     resultados['jacobi'] = res_jacobi
 
     # Ejecutar Gauss-Seidel
-    res_seidel = gauss_seidel(A, b, x0.copy(), tol, niter)
+    res_seidel = gauss_seidel(A, b, x0.copy(), tol, niter, tol_str)
     resultados['gauss_seidel'] = res_seidel
 
     # Ejecutar SOR
-    res_sor = sor(A, b, x0.copy(), tol, niter, w)
+    res_sor = sor(A, b, x0.copy(), tol, niter, w, tol_str)
     resultados['sor'] = res_sor
 
     # Análisis comparativo

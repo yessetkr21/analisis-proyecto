@@ -406,7 +406,8 @@ def api_jacobi():
 
         x0 = parsear_vector_x0(data.get('x0', ''), len(A))
 
-        resultado = capitulo2.jacobi(A, b, x0, float(data['tol']), int(data['niter']))
+        tol_str = str(data['tol'])  # Mantener string original
+        resultado = capitulo2.jacobi(A, b, x0, float(data['tol']), int(data['niter']), tol_str)
         return jsonify(resultado)
     except Exception as e:
         return jsonify({"exito": False, "mensaje": str(e)}), 400
@@ -423,7 +424,8 @@ def api_gauss_seidel():
 
         x0 = parsear_vector_x0(data.get('x0', ''), len(A))
 
-        resultado = capitulo2.gauss_seidel(A, b, x0, float(data['tol']), int(data['niter']))
+        tol_str = str(data['tol'])  # Mantener string original
+        resultado = capitulo2.gauss_seidel(A, b, x0, float(data['tol']), int(data['niter']), tol_str)
         return jsonify(resultado)
     except Exception as e:
         return jsonify({"exito": False, "mensaje": str(e)}), 400
@@ -440,7 +442,8 @@ def api_sor():
 
         x0 = parsear_vector_x0(data.get('x0', ''), len(A))
 
-        resultado = capitulo2.sor(A, b, x0, float(data['tol']), int(data['niter']), float(data['w']))
+        tol_str = str(data['tol'])  # Mantener string original
+        resultado = capitulo2.sor(A, b, x0, float(data['tol']), int(data['niter']), float(data['w']), tol_str)
         return jsonify(resultado)
     except Exception as e:
         return jsonify({"exito": False, "mensaje": str(e)}), 400
@@ -459,8 +462,32 @@ def api_comparar_cap2():
         x0 = parsear_vector_x0(data.get('x0', ''), len(A))
         w = float(data.get('w', 1.5))
 
-        resultados = capitulo2.comparar_metodos_cap2(A, b, x0, float(data['tol']), int(data['niter']), w)
+        tol_str = str(data['tol'])  # Mantener string original
+        resultados = capitulo2.comparar_metodos_cap2(A, b, x0, float(data['tol']), int(data['niter']), w, tol_str)
         return jsonify(resultados)
+    except Exception as e:
+        return jsonify({"exito": False, "mensaje": str(e)}), 400
+
+
+@app.route('/api/capitulo2/grafica-convergencia', methods=['POST'])
+def api_grafica_convergencia_cap2():
+    """Genera puntos para graficar la convergencia de un método iterativo"""
+    try:
+        data = request.json
+        tabla_datos = data.get('tabla', [])
+        tipo_error = data.get('tipo_error', 'absoluto')
+
+        if not tabla_datos:
+            return jsonify({"exito": False, "mensaje": "No hay datos para graficar"}), 400
+
+        iteraciones, errores = capitulo2.generar_puntos_grafica_convergencia(tabla_datos, tipo_error)
+
+        return jsonify({
+            "exito": True,
+            "iteraciones": iteraciones,
+            "errores": errores,
+            "tipo_error": tipo_error
+        })
     except Exception as e:
         return jsonify({"exito": False, "mensaje": str(e)}), 400
 
@@ -733,6 +760,7 @@ def informe_capitulo2():
         n = len(A)
         x0 = parsear_vector_x0(data.get('x0', ''), n)
         tol = float(data['tol'])
+        tol_str = str(data['tol'])  # Mantener string original para detectar tipo de error
         niter = int(data['niter'])
         w = float(data.get('w', 1.5))
 
@@ -741,7 +769,7 @@ def informe_capitulo2():
         # 1. Jacobi
         try:
             inicio = time.time()
-            res = capitulo2.jacobi(A.copy(), b.copy(), x0.copy(), tol, niter)
+            res = capitulo2.jacobi(A.copy(), b.copy(), x0.copy(), tol, niter, tol_str)
             tiempo = time.time() - inicio
             if res['exito']:
                 resultados.append({
@@ -759,7 +787,7 @@ def informe_capitulo2():
         # 2. Gauss-Seidel
         try:
             inicio = time.time()
-            res = capitulo2.gauss_seidel(A.copy(), b.copy(), x0.copy(), tol, niter)
+            res = capitulo2.gauss_seidel(A.copy(), b.copy(), x0.copy(), tol, niter, tol_str)
             tiempo = time.time() - inicio
             if res['exito']:
                 resultados.append({
@@ -777,7 +805,7 @@ def informe_capitulo2():
         # 3. SOR
         try:
             inicio = time.time()
-            res = capitulo2.sor(A.copy(), b.copy(), x0.copy(), tol, niter, w)
+            res = capitulo2.sor(A.copy(), b.copy(), x0.copy(), tol, niter, w, tol_str)
             tiempo = time.time() - inicio
             if res['exito']:
                 resultados.append({
