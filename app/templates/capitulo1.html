@@ -20,13 +20,89 @@
     </div>
 
     <div class="metodo-content">
+        <!-- Ayuda General -->
+        <div class="ayuda-general-banner">
+            <button class="ayuda-toggle" onclick="toggleAyudaGeneral()">
+                📖 ¿Cómo escribir funciones? (Click para ayuda)
+            </button>
+            <div id="ayuda-general-content" class="ayuda-general-content" style="display: none;">
+                <h3>📚 Guía de Sintaxis de Funciones</h3>
+
+                <div class="ayuda-section">
+                    <h4>🔢 Operadores Básicos</h4>
+                    <table class="syntax-table">
+                        <tr><th>Operación</th><th>Sintaxis</th><th>Ejemplo</th></tr>
+                        <tr><td>Suma</td><td><code>+</code></td><td><code>x + 5</code></td></tr>
+                        <tr><td>Resta</td><td><code>-</code></td><td><code>x - 3</code></td></tr>
+                        <tr><td>Multiplicación</td><td><code>*</code></td><td><code>2*x</code> o <code>x*y</code></td></tr>
+                        <tr><td>División</td><td><code>/</code></td><td><code>x/2</code> o <code>1/x</code></td></tr>
+                        <tr><td>Potencia</td><td><code>**</code></td><td><code>x**2</code> (x²), <code>x**3</code> (x³)</td></tr>
+                        <tr><td>Raíz</td><td><code>**(1/n)</code></td><td><code>x**(1/2)</code> (√x), <code>x**(1/3)</code> (∛x)</td></tr>
+                    </table>
+                </div>
+
+                <div class="ayuda-section">
+                    <h4>📐 Funciones Matemáticas</h4>
+                    <table class="syntax-table">
+                        <tr><th>Función</th><th>Sintaxis</th><th>Ejemplo</th></tr>
+                        <tr><td>Seno</td><td><code>sin(x)</code></td><td><code>sin(x) - x/2</code></td></tr>
+                        <tr><td>Coseno</td><td><code>cos(x)</code></td><td><code>cos(x) - x</code></td></tr>
+                        <tr><td>Tangente</td><td><code>tan(x)</code></td><td><code>tan(x) - x</code></td></tr>
+                        <tr><td>Exponencial</td><td><code>exp(x)</code></td><td><code>exp(x) - 3*x</code></td></tr>
+                        <tr><td>Logaritmo natural</td><td><code>log(x)</code></td><td><code>log(x) - 2</code></td></tr>
+                        <tr><td>Raíz cuadrada</td><td><code>sqrt(x)</code></td><td><code>sqrt(x) - 5</code></td></tr>
+                        <tr><td>Valor absoluto</td><td><code>abs(x)</code></td><td><code>abs(x) - 3</code></td></tr>
+                    </table>
+                </div>
+
+                <div class="ayuda-section">
+                    <h4>✍️ Ejemplos Completos</h4>
+                    <ul class="ejemplos-list">
+                        <li><code>x**3 - 2*x - 5</code> → Polinomio cúbico</li>
+                        <li><code>x**2 - 4</code> → Tiene raíces en x=2 y x=-2</li>
+                        <li><code>sin(x) - x/2</code> → Función trigonométrica</li>
+                        <li><code>exp(x) - 3*x</code> → Función exponencial</li>
+                        <li><code>log(x) - 1/x</code> → Combinación logaritmo y fracción</li>
+                        <li><code>(x + 2)**(1/3)</code> → Raíz cúbica de (x+2)</li>
+                        <li><code>x**3 - x - 2</code> → Otra función polinomial</li>
+                    </ul>
+                </div>
+
+                <div class="ayuda-section">
+                    <h4>🧮 Sobre las Derivadas</h4>
+                    <div class="info-box">
+                        <p><strong>¡Buenas noticias!</strong> En los métodos de Newton-Raphson y Raíces Múltiples, <strong>NO necesitas calcular la derivada manualmente</strong>.</p>
+                        <p>El sistema calcula automáticamente:</p>
+                        <ul>
+                            <li><strong>f'(x)</strong> - Primera derivada</li>
+                            <li><strong>f''(x)</strong> - Segunda derivada (para Raíces Múltiples)</li>
+                        </ul>
+                        <p>Por ejemplo, si ingresas: <code>f(x) = x**3 - 2*x - 5</code></p>
+                        <p>El sistema calcula automáticamente: <code>f'(x) = 3*x**2 - 2</code></p>
+                        <p class="tip">💡 <strong>Tip:</strong> Los resultados mostrarán la derivada calculada para que puedas verificarla.</p>
+                    </div>
+                </div>
+
+                <div class="ayuda-section">
+                    <h4>⚠️ Errores Comunes</h4>
+                    <ul class="errores-list">
+                        <li>❌ <code>2x</code> → ✅ <code>2*x</code> (siempre usa * para multiplicar)</li>
+                        <li>❌ <code>x^2</code> → ✅ <code>x**2</code> (usa ** para potencias)</li>
+                        <li>❌ <code>√x</code> → ✅ <code>sqrt(x)</code> o <code>x**(1/2)</code></li>
+                        <li>❌ <code>ln(x)</code> → ✅ <code>log(x)</code> (log es logaritmo natural)</li>
+                        <li>❌ <code>e^x</code> → ✅ <code>exp(x)</code></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
         <!-- Bisección -->
         <div id="biseccion" class="metodo-panel active">
             <h2>Método de Bisección</h2>
             <div class="help-box">
                 <h4>Ayuda</h4>
                 <p>El método de bisección encuentra raíces en un intervalo [Xi, Xs] donde f(Xi) y f(Xs) tienen signos opuestos.</p>
-                <p><strong>Ejemplo:</strong> Para f(x) = x³ - 2x - 5, usa Xi=2, Xs=3</p>
+                <p><strong>Este ejemplo:</strong> f(x) = x³ - 2x - 5 tiene una raíz en [2, 3] ≈ 2.0946</p>
             </div>
             <form id="form-biseccion" onsubmit="event.preventDefault(); ejecutarMetodo('biseccion');">
                 <div class="form-row">
@@ -42,8 +118,8 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tolerancia:</label>
-                        <input type="text" name="tol" value="0.00001" required>
-                        <small>Usa 5e-7 para error relativo, 0.00001 para absoluto</small>
+                        <input type="text" name="tol" value="5e-5" required>
+                        <small><strong>IMPORTANTE:</strong> Solo son válidos <strong>5e-X</strong> (Cifras Significativas) o <strong>0.5e-X</strong> (Decimales Correctos). Otros formatos como 1e-5 se tratarán como tolerancia genérica.</small>
                     </div>
                     <div class="form-group">
                         <label>Iteraciones máximas:</label>
@@ -53,12 +129,13 @@
                 <div class="form-group">
                     <label>Función f(x):</label>
                     <input type="text" name="funcion" value="x**3 - 2*x - 5" required>
-                    <small>Ejemplos: x**2-4, sin(x)-x/2, exp(x)-3*x, log(x)+x-1</small>
+                    <small>Otros ejemplos: x**2-4, sin(x)-x/2, exp(x)-3*x, x**3-x-2</small>
                 </div>
                 <button type="submit" class="btn btn-primary">Ejecutar</button>
             </form>
             <div id="loading-biseccion" class="loading"><div class="spinner"></div></div>
             <div id="resultados-biseccion" class="results-section"></div>
+            <div id="grafica-biseccion" class="chart-container"></div>
         </div>
 
         <!-- Regla Falsa -->
@@ -67,6 +144,7 @@
             <div class="help-box">
                 <h4>Ayuda</h4>
                 <p>Similar a bisección, pero usa interpolación lineal para aproximar mejor la raíz.</p>
+                <p><strong>Este ejemplo:</strong> Converge más rápido que bisección (≈9 iteraciones vs ≈16)</p>
             </div>
             <form id="form-regla-falsa" onsubmit="event.preventDefault(); ejecutarMetodo('regla-falsa');">
                 <div class="form-row">
@@ -82,7 +160,8 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tolerancia:</label>
-                        <input type="text" name="tol" value="0.00001" required>
+                        <input type="text" name="tol" value="5e-5" required>
+                        <small><strong>IMPORTANTE:</strong> Solo son válidos <strong>5e-X</strong> (Cifras Significativas) o <strong>0.5e-X</strong> (Decimales Correctos). Otros formatos como 1e-5 se tratarán como tolerancia genérica.</small>
                     </div>
                     <div class="form-group">
                         <label>Iteraciones máximas:</label>
@@ -97,6 +176,7 @@
             </form>
             <div id="loading-regla-falsa" class="loading"><div class="spinner"></div></div>
             <div id="resultados-regla-falsa" class="results-section"></div>
+            <div id="grafica-regla-falsa" class="chart-container"></div>
         </div>
 
         <!-- Newton-Raphson -->
@@ -115,7 +195,8 @@
                     </div>
                     <div class="form-group">
                         <label>Tolerancia:</label>
-                        <input type="text" name="tol" value="0.00001" required>
+                        <input type="text" name="tol" value="0.5e-5" required>
+                        <small>Este método usa solo <strong>error absoluto (0.5e-X)</strong></small>
                     </div>
                 </div>
                 <div class="form-group">
@@ -130,6 +211,137 @@
             </form>
             <div id="loading-newton" class="loading"><div class="spinner"></div></div>
             <div id="resultados-newton" class="results-section"></div>
+            <div id="grafica-newton" class="chart-container"></div>
+        </div>
+
+        <!-- Punto Fijo -->
+        <div id="punto-fijo" class="metodo-panel">
+            <h2>Método de Punto Fijo</h2>
+            <div class="help-box">
+                <h4>Ayuda</h4>
+                <p>Transforma f(x)=0 en x=g(x) y usa iteración xn+1 = g(xn).</p>
+                <p><strong>Este ejemplo:</strong> Para f(x)=x³-x-2=0, usamos g(x)=(x+2)^(1/3). Raíz ≈ 1.5214</p>
+            </div>
+            <form id="form-punto-fijo" onsubmit="event.preventDefault(); ejecutarMetodo('punto-fijo');">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>x0 (valor inicial):</label>
+                        <input type="number" step="any" name="x0" value="1.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tolerancia:</label>
+                        <input type="text" name="tol" value="0.5e-5" required>
+                        <small>Este método usa solo <strong>error absoluto (0.5e-X)</strong></small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Iteraciones máximas:</label>
+                    <input type="number" name="niter" value="100" required>
+                </div>
+                <div class="form-group">
+                    <label>Función g(x) - Iteración:</label>
+                    <input type="text" name="funcion_g" value="(x + 2)**(1/3)" required>
+                    <small>Debe cumplir x = g(x). Otro ejemplo: Para cos(x)-x=0, usar g(x)=cos(x)</small>
+                </div>
+                <div class="form-group">
+                    <label>Función f(x) - Original:</label>
+                    <input type="text" name="funcion_f" value="x**3 - x - 2" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Ejecutar</button>
+            </form>
+            <div id="loading-punto-fijo" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-punto-fijo" class="results-section"></div>
+            <div id="grafica-punto-fijo" class="chart-container"></div>
+        </div>
+
+        <!-- Secante -->
+        <div id="secante" class="metodo-panel">
+            <h2>Método de la Secante</h2>
+            <div class="help-box">
+                <h4>Ayuda</h4>
+                <p>Aproxima la derivada usando dos puntos anteriores. No requiere calcular la derivada.</p>
+                <p><strong>Este ejemplo:</strong> f(x)=x³-x-2=0 con x0=1, x1=2. Raíz ≈ 1.5214 en ~6 iteraciones</p>
+            </div>
+            <form id="form-secante" onsubmit="event.preventDefault(); ejecutarMetodo('secante');">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>x0 (primer valor):</label>
+                        <input type="number" step="any" name="x0" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>x1 (segundo valor):</label>
+                        <input type="number" step="any" name="x1" value="2" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tolerancia:</label>
+                        <input type="text" name="tol" value="5e-5" required>
+                        <small><strong>IMPORTANTE:</strong> Solo son válidos <strong>5e-X</strong> (Cifras Significativas) o <strong>0.5e-X</strong> (Decimales Correctos). Otros formatos como 1e-5 se tratarán como tolerancia genérica.</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Iteraciones máximas:</label>
+                        <input type="number" name="niter" value="100" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Función f(x):</label>
+                    <input type="text" name="funcion" value="x**3 - x - 2" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Ejecutar</button>
+            </form>
+            <div id="loading-secante" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-secante" class="results-section"></div>
+            <div id="grafica-secante" class="chart-container"></div>
+        </div>
+
+        <!-- Raíces Múltiples -->
+        <div id="raices-multiples" class="metodo-panel">
+            <h2>Método de Newton para Raíces Múltiples</h2>
+            <div class="help-box">
+                <h4>Ayuda</h4>
+                <p>Para raíces con multiplicidad mayor a 1. Usa segunda derivada o multiplicidad conocida.</p>
+                <p><strong>Este ejemplo:</strong> f(x)=(x-1)³ tiene raíz triple en x=1. Converge en 1 iteración.</p>
+            </div>
+            <form id="form-raices-multiples" onsubmit="event.preventDefault(); ejecutarMetodo('raices-multiples');">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>x0 (valor inicial):</label>
+                        <input type="number" step="any" name="x0" value="0.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tolerancia:</label>
+                        <input type="text" name="tol" value="5e-5" required>
+                        <small><strong>IMPORTANTE:</strong> Solo son válidos <strong>5e-X</strong> (Cifras Significativas) o <strong>0.5e-X</strong> (Decimales Correctos). Otros formatos como 1e-5 se tratarán como tolerancia genérica.</small>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Iteraciones máximas:</label>
+                        <input type="number" name="niter" value="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Método:</label>
+                        <select name="metodo">
+                            <option value="2" selected>Con segunda derivada (Método 2)</option>
+                            <option value="1">Con multiplicidad conocida (Método 1)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" id="multiplicidad-group" style="display:none;">
+                    <label>Multiplicidad (solo para Método 1):</label>
+                    <input type="number" name="multiplicidad" value="3">
+                </div>
+                <div class="form-group">
+                    <label>Función f(x):</label>
+                    <input type="text" name="funcion" value="(x - 1)**3" required>
+                    <small>Otros ejemplos: x**2 (raíz doble en 0), exp(x)-x-1 (raíz en 0)</small>
+                </div>
+                <button type="submit" class="btn btn-primary">Ejecutar</button>
+            </form>
+            <div id="loading-raices-multiples" class="loading"><div class="spinner"></div></div>
+            <div id="resultados-raices-multiples" class="results-section"></div>
+            <div id="grafica-raices-multiples" class="chart-container"></div>
         </div>
 
         <!-- Panel de Informe Comparativo -->
@@ -150,36 +362,37 @@
             <form id="form-informe">
                 <div class="form-group">
                     <label>Función f(x):</label>
-                    <input type="text" name="funcion" value="x**3 - x - 2" required>
-                    <small>Ejemplo: x**2 - 4, sin(x) - x/2, exp(x) - 2</small>
+                    <input type="text" name="funcion" value="x**3 - 2*x - 5" required>
+                    <small>Función de prueba que funciona con todos los métodos</small>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Intervalo Xi (Bisección/Regla Falsa):</label>
-                        <input type="number" step="any" name="xi" value="1" required>
+                        <input type="number" step="any" name="xi" value="2" required>
                     </div>
                     <div class="form-group">
                         <label>Intervalo Xs:</label>
-                        <input type="number" step="any" name="xs" value="2" required>
+                        <input type="number" step="any" name="xs" value="3" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>X0 inicial (Newton/Punto Fijo/Secante):</label>
-                        <input type="number" step="any" name="x0" value="1.5" required>
+                        <label>X0 inicial (Newton/Punto Fijo/Secante/Raíces Múltiples):</label>
+                        <input type="number" step="any" name="x0" value="2.5" required>
                     </div>
                     <div class="form-group">
                         <label>X1 (Secante):</label>
-                        <input type="number" step="any" name="x1" value="2" required>
+                        <input type="number" step="any" name="x1" value="3" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tolerancia:</label>
-                        <input type="number" step="any" name="tol" value="1e-6" required>
+                        <input type="text" name="tol" value="5e-5" required>
+                        <small><strong>5e-X</strong> = Cifras Significativas | <strong>0.5e-X</strong> = Decimales Correctos</small>
                     </div>
                     <div class="form-group">
                         <label>Iteraciones máximas:</label>
@@ -197,7 +410,6 @@
     </div>
 </div>
 
-<div id="grafica" class="chart-container"></div>
 {% endblock %}
 
 {% block extra_js %}

@@ -31,32 +31,32 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 95%;
     margin: 0 auto;
-    padding: 30px 20px;
+    padding: 20px 15px;
 }
 
 /* ===== HEADER ===== */
 .header {
     background: #ffffff;
-    padding: 50px 40px;
+    padding: 30px 30px;
     border-radius: 0;
     box-shadow: var(--shadow);
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
     border-bottom: 3px solid #1a1a1a;
 }
 
 .header-content h1 {
-    font-size: 2.8em;
+    font-size: 2.2em;
     color: #1a1a1a;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
     font-weight: 700;
     letter-spacing: -0.5px;
 }
 
 .subtitle {
-    font-size: 1.1em;
+    font-size: 1em;
     color: #666666;
     font-weight: 400;
 }
@@ -364,14 +364,14 @@ body {
 /* ===== SECCIONES DE MÉTODOS ===== */
 .metodos-container {
     display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 30px;
+    grid-template-columns: 250px 1fr;
+    gap: 20px;
     margin-bottom: 30px;
 }
 
 .metodos-sidebar {
     background: white;
-    padding: 25px;
+    padding: 20px;
     border-radius: 10px;
     box-shadow: var(--shadow);
     height: fit-content;
@@ -410,7 +410,7 @@ body {
 
 .metodo-content {
     background: white;
-    padding: 30px;
+    padding: 25px;
     border-radius: 10px;
     box-shadow: var(--shadow);
 }
@@ -425,7 +425,7 @@ body {
 
 /* ===== FORMULARIOS ===== */
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .form-group label {
@@ -439,10 +439,10 @@ body {
 .form-group textarea,
 .form-group select {
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     border: 2px solid var(--border-color);
     border-radius: 8px;
-    font-size: 1em;
+    font-size: 0.95em;
     transition: border-color 0.3s;
 }
 
@@ -468,8 +468,8 @@ body {
 
 /* ===== RESULTADOS ===== */
 .results-section {
-    margin-top: 30px;
-    padding: 25px;
+    margin-top: 20px;
+    padding: 20px;
     background: var(--bg-color);
     border-radius: 10px;
     display: none;
@@ -550,14 +550,22 @@ th {
 
 /* ===== GRÁFICA ===== */
 .chart-container {
-    margin-top: 20px;
+    margin-top: 15px;
     background: white;
-    padding: 20px;
+    padding: 15px;
     border-radius: 8px;
     min-height: 400px;
+    width: 100%;
+    height: 450px;
 }
 
-#grafica {
+#grafica,
+#grafica-biseccion,
+#grafica-regla-falsa,
+#grafica-newton,
+#grafica-punto-fijo,
+#grafica-secante,
+#grafica-raices-multiples {
     width: 100%;
     height: 400px;
 }
@@ -566,9 +574,9 @@ th {
 .help-box {
     background: #e8f4f8;
     border-left: 4px solid var(--secondary-color);
-    padding: 15px;
+    padding: 12px;
     border-radius: 5px;
-    margin: 20px 0;
+    margin: 15px 0;
 }
 
 .help-box h4 {
@@ -822,4 +830,185 @@ th {
 
 .mb-20 {
     margin-bottom: 20px;
+}
+
+/* ===== SECCIÓN DE AYUDA GENERAL ===== */
+.ayuda-general-banner {
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 4px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.ayuda-toggle {
+    width: 100%;
+    padding: 16px 24px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.ayuda-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+.ayuda-general-content {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    margin-top: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.ayuda-general-content h3 {
+    color: #2c3e50;
+    margin-bottom: 25px;
+    font-size: 24px;
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 10px;
+}
+
+.ayuda-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+}
+
+.ayuda-section h4 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+/* Tabla de sintaxis */
+.syntax-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.syntax-table th {
+    background: #3498db;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.syntax-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.syntax-table tr:last-child td {
+    border-bottom: none;
+}
+
+.syntax-table tr:hover {
+    background: #f8f9fa;
+}
+
+.syntax-table code {
+    background: #f0f0f0;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    color: #c0392b;
+    font-weight: 600;
+}
+
+/* Listas de ejemplos */
+.ejemplos-list {
+    list-style: none;
+    padding: 0;
+}
+
+.ejemplos-list li {
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    background: white;
+    border-radius: 6px;
+    border-left: 3px solid #27ae60;
+    font-family: 'Courier New', monospace;
+}
+
+.ejemplos-list li code {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+/* Lista de errores */
+.errores-list {
+    list-style: none;
+    padding: 0;
+}
+
+.errores-list li {
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    background: white;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+}
+
+.errores-list code {
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+}
+
+/* Info box */
+.info-box {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.info-box strong {
+    color: #fff;
+}
+
+.info-box ul {
+    margin-left: 20px;
+    margin-top: 10px;
+}
+
+.info-box .tip {
+    margin-top: 15px;
+    padding: 12px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 6px;
+    border-left: 4px solid #f39c12;
+}
+
+/* Responsive para ayuda */
+@media (max-width: 768px) {
+    .ayuda-general-content {
+        padding: 20px;
+    }
+
+    .syntax-table {
+        font-size: 14px;
+    }
+
+    .syntax-table th,
+    .syntax-table td {
+        padding: 8px;
+    }
 }

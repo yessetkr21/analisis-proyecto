@@ -85,6 +85,12 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/test_desmos')
+def test_desmos():
+    """Página de prueba para Desmos"""
+    return render_template('test_desmos.html')
+
+
 @app.route('/capitulo1')
 def pagina_capitulo1():
     """Página del Capítulo 1: Búsqueda de raíces"""
@@ -109,32 +115,74 @@ def pagina_capitulo3():
 def api_biseccion():
     try:
         data = request.json
-        resultado = capitulo1.biseccion(
-            float(data['xi']),
-            float(data['xs']),
-            float(data['tol']),
-            int(data['niter']),
-            data['funcion']
-        )
+
+        # Validar que todos los campos estén presentes
+        required_fields = ['xi', 'xs', 'tol', 'niter', 'funcion']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({"exito": False, "mensaje": f"❌ Faltan campos requeridos: {', '.join(missing_fields)}"}), 400
+
+        # Validar tipos de datos
+        try:
+            xi = float(data['xi'])
+            xs = float(data['xs'])
+            tol = float(data['tol'])
+            niter = int(data['niter'])
+        except (ValueError, TypeError):
+            return jsonify({"exito": False, "mensaje": "❌ Los valores numéricos no son válidos.\n💡 Asegúrate de que xi, xs, tol y niter sean números."}), 400
+
+        # Validar rangos
+        if tol <= 0:
+            return jsonify({"exito": False, "mensaje": "❌ La tolerancia debe ser un número positivo.\n💡 Ejemplo: 1e-5"}), 400
+
+        if niter <= 0:
+            return jsonify({"exito": False, "mensaje": "❌ El número de iteraciones debe ser positivo.\n💡 Ejemplo: 100"}), 400
+
+        if xi == xs:
+            return jsonify({"exito": False, "mensaje": "❌ Los valores xi y xs deben ser diferentes.\n💡 Necesitas un intervalo [xi, xs] válido."}), 400
+
+        tol_str = str(data['tol'])  # Mantener string original
+        resultado = capitulo1.biseccion(xi, xs, tol, niter, data['funcion'], tol_str)
         return jsonify(resultado)
     except Exception as e:
-        return jsonify({"exito": False, "mensaje": str(e)}), 400
+        return jsonify({"exito": False, "mensaje": f"❌ Error inesperado: {str(e)}"}), 400
 
 
 @app.route('/api/capitulo1/regla-falsa', methods=['POST'])
 def api_regla_falsa():
     try:
         data = request.json
-        resultado = capitulo1.regla_falsa(
-            float(data['xi']),
-            float(data['xs']),
-            float(data['tol']),
-            int(data['niter']),
-            data['funcion']
-        )
+
+        # Validar campos requeridos
+        required_fields = ['xi', 'xs', 'tol', 'niter', 'funcion']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({"exito": False, "mensaje": f"❌ Faltan campos requeridos: {', '.join(missing_fields)}"}), 400
+
+        # Validar tipos
+        try:
+            xi = float(data['xi'])
+            xs = float(data['xs'])
+            tol = float(data['tol'])
+            niter = int(data['niter'])
+        except (ValueError, TypeError):
+            return jsonify({"exito": False, "mensaje": "❌ Los valores numéricos no son válidos.\n💡 Asegúrate de que xi, xs, tol y niter sean números."}), 400
+
+        # Validar rangos
+        if tol <= 0:
+            return jsonify({"exito": False, "mensaje": "❌ La tolerancia debe ser un número positivo.\n💡 Ejemplo: 1e-5"}), 400
+
+        if niter <= 0:
+            return jsonify({"exito": False, "mensaje": "❌ El número de iteraciones debe ser positivo.\n💡 Ejemplo: 100"}), 400
+
+        if xi == xs:
+            return jsonify({"exito": False, "mensaje": "❌ Los valores xi y xs deben ser diferentes.\n💡 Necesitas un intervalo [xi, xs] válido."}), 400
+
+        tol_str = str(data['tol'])
+        resultado = capitulo1.regla_falsa(xi, xs, tol, niter, data['funcion'], tol_str)
         return jsonify(resultado)
     except Exception as e:
-        return jsonify({"exito": False, "mensaje": str(e)}), 400
+        return jsonify({"exito": False, "mensaje": f"❌ Error inesperado: {str(e)}"}), 400
 
 
 @app.route('/api/capitulo1/punto-fijo', methods=['POST'])
@@ -157,28 +205,66 @@ def api_punto_fijo():
 def api_newton():
     try:
         data = request.json
-        resultado = capitulo1.newton_raphson(
-            float(data['x0']),
-            float(data['tol']),
-            int(data['niter']),
-            data['funcion']
-        )
+
+        # Validar campos requeridos
+        required_fields = ['x0', 'tol', 'niter', 'funcion']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({"exito": False, "mensaje": f"❌ Faltan campos requeridos: {', '.join(missing_fields)}"}), 400
+
+        # Validar tipos
+        try:
+            x0 = float(data['x0'])
+            tol = float(data['tol'])
+            niter = int(data['niter'])
+        except (ValueError, TypeError):
+            return jsonify({"exito": False, "mensaje": "❌ Los valores numéricos no son válidos.\n💡 Asegúrate de que x0, tol y niter sean números."}), 400
+
+        # Validar rangos
+        if tol <= 0:
+            return jsonify({"exito": False, "mensaje": "❌ La tolerancia debe ser un número positivo.\n💡 Ejemplo: 1e-5"}), 400
+
+        if niter <= 0:
+            return jsonify({"exito": False, "mensaje": "❌ El número de iteraciones debe ser positivo.\n💡 Ejemplo: 100"}), 400
+
+        resultado = capitulo1.newton_raphson(x0, tol, niter, data['funcion'])
         return jsonify(resultado)
     except Exception as e:
-        return jsonify({"exito": False, "mensaje": str(e)}), 400
+        return jsonify({"exito": False, "mensaje": f"❌ Error inesperado: {str(e)}"}), 400
 
 
 @app.route('/api/capitulo1/secante', methods=['POST'])
 def api_secante():
     try:
         data = request.json
-        resultado = capitulo1.secante(
-            float(data['x0']),
-            float(data['x1']),
-            float(data['tol']),
-            int(data['niter']),
-            data['funcion']
-        )
+
+        # Validar campos requeridos
+        required_fields = ['x0', 'x1', 'tol', 'niter', 'funcion']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({"exito": False, "mensaje": f"❌ Faltan campos requeridos: {', '.join(missing_fields)}"}), 400
+
+        # Validar tipos
+        try:
+            x0 = float(data['x0'])
+            x1 = float(data['x1'])
+            tol = float(data['tol'])
+            niter = int(data['niter'])
+        except (ValueError, TypeError):
+            return jsonify({"exito": False, "mensaje": "❌ Los valores numéricos no son válidos.\n💡 Asegúrate de que x0, x1, tol y niter sean números."}), 400
+
+        # Validar rangos
+        if tol <= 0:
+            return jsonify({"exito": False, "mensaje": "❌ La tolerancia debe ser un número positivo.\n💡 Ejemplo: 1e-5"}), 400
+
+        if niter <= 0:
+            return jsonify({"exito": False, "mensaje": "❌ El número de iteraciones debe ser positivo.\n💡 Ejemplo: 100"}), 400
+
+        if x0 == x1:
+            return jsonify({"exito": False, "mensaje": "❌ Los valores x0 y x1 deben ser diferentes.\n💡 Necesitas dos puntos iniciales distintos."}), 400
+
+        tol_str = str(data['tol'])
+        resultado = capitulo1.secante(x0, x1, tol, niter, data['funcion'], tol_str)
         return jsonify(resultado)
     except Exception as e:
         return jsonify({"exito": False, "mensaje": str(e)}), 400
@@ -188,30 +274,54 @@ def api_secante():
 def api_raices_multiples():
     try:
         data = request.json
-        metodo = int(data.get('metodo', 2))
-        multiplicidad = int(data['multiplicidad']) if data.get('multiplicidad') else None
 
-        resultado = capitulo1.raices_multiples(
-            float(data['x0']),
-            float(data['tol']),
-            int(data['niter']),
-            data['funcion'],
-            metodo,
-            multiplicidad
-        )
+        # Validar campos requeridos
+        required_fields = ['x0', 'tol', 'niter', 'funcion']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({"exito": False, "mensaje": f"❌ Faltan campos requeridos: {', '.join(missing_fields)}"}), 400
+
+        # Validar tipos
+        try:
+            x0 = float(data['x0'])
+            tol = float(data['tol'])
+            niter = int(data['niter'])
+            metodo = int(data.get('metodo', 2))
+            multiplicidad = int(data['multiplicidad']) if data.get('multiplicidad') else None
+        except (ValueError, TypeError):
+            return jsonify({"exito": False, "mensaje": "❌ Los valores numéricos no son válidos.\n💡 Asegúrate de que x0, tol, niter y metodo sean números."}), 400
+
+        # Validar rangos
+        if tol <= 0:
+            return jsonify({"exito": False, "mensaje": "❌ La tolerancia debe ser un número positivo.\n💡 Ejemplo: 1e-5"}), 400
+
+        if niter <= 0:
+            return jsonify({"exito": False, "mensaje": "❌ El número de iteraciones debe ser positivo.\n💡 Ejemplo: 100"}), 400
+
+        if metodo not in [1, 2]:
+            return jsonify({"exito": False, "mensaje": "❌ El método debe ser 1 (con multiplicidad) o 2 (con segunda derivada)."}), 400
+
+        if metodo == 1 and not multiplicidad:
+            return jsonify({"exito": False, "mensaje": "❌ Para el método 1 debes especificar la multiplicidad.\n💡 Ejemplo: 2 para raíz doble, 3 para raíz triple."}), 400
+
+        tol_str = str(data['tol'])
+        resultado = capitulo1.raices_multiples(x0, tol, niter, data['funcion'], metodo, multiplicidad, tol_str)
         return jsonify(resultado)
     except Exception as e:
-        return jsonify({"exito": False, "mensaje": str(e)}), 400
+        return jsonify({"exito": False, "mensaje": f"❌ Error inesperado: {str(e)}"}), 400
 
 
 @app.route('/api/capitulo1/grafica', methods=['POST'])
 def api_grafica_cap1():
     try:
         data = request.json
+        raiz = data.get('raiz', None)
+
         x_vals, y_vals = capitulo1.generar_puntos_grafica(
             data['funcion'],
-            float(data.get('x_min', -10)),
-            float(data.get('x_max', 10))
+            x_min=data.get('x_min', None),
+            x_max=data.get('x_max', None),
+            raiz=raiz
         )
 
         if x_vals is None:
@@ -236,21 +346,22 @@ def api_comparar_cap1():
         xs = float(data['xs'])
         x0 = float(data.get('x0', (xi + xs) / 2))
         tol = float(data['tol'])
+        tol_str = str(data['tol'])  # Mantener string original
         niter = int(data['niter'])
 
         resultados = {}
 
         # Bisección
-        resultados['biseccion'] = capitulo1.biseccion(xi, xs, tol, niter, funcion)
+        resultados['biseccion'] = capitulo1.biseccion(xi, xs, tol, niter, funcion, tol_str)
 
         # Regla falsa
-        resultados['regla_falsa'] = capitulo1.regla_falsa(xi, xs, tol, niter, funcion)
+        resultados['regla_falsa'] = capitulo1.regla_falsa(xi, xs, tol, niter, funcion, tol_str)
 
         # Newton-Raphson
         resultados['newton'] = capitulo1.newton_raphson(x0, tol, niter, funcion)
 
         # Secante
-        resultados['secante'] = capitulo1.secante(xi, xs, tol, niter, funcion)
+        resultados['secante'] = capitulo1.secante(xi, xs, tol, niter, funcion, tol_str)
 
         # Punto fijo (requiere función g, usar solo si se proporciona)
         if 'funcion_g' in data:
@@ -473,6 +584,7 @@ def informe_capitulo1():
         x0 = float(data['x0'])
         x1 = float(data['x1'])
         tol = float(data['tol'])
+        tol_str = str(data['tol'])  # Mantener string original
         niter = int(data['niter'])
 
         resultados = []
@@ -480,7 +592,7 @@ def informe_capitulo1():
         # 1. Bisección
         try:
             inicio = time.time()
-            res = capitulo1.biseccion(xi, xs, tol, niter, funcion)
+            res = capitulo1.biseccion(xi, xs, tol, niter, funcion, tol_str)
             tiempo = time.time() - inicio
             if res['exito']:
                 resultados.append({
@@ -497,7 +609,7 @@ def informe_capitulo1():
         # 2. Regla Falsa
         try:
             inicio = time.time()
-            res = capitulo1.regla_falsa(xi, xs, tol, niter, funcion)
+            res = capitulo1.regla_falsa(xi, xs, tol, niter, funcion, tol_str)
             tiempo = time.time() - inicio
             if res['exito']:
                 resultados.append({
@@ -550,7 +662,7 @@ def informe_capitulo1():
         # 5. Secante
         try:
             inicio = time.time()
-            res = capitulo1.secante(x0, x1, tol, niter, funcion)
+            res = capitulo1.secante(x0, x1, tol, niter, funcion, tol_str)
             tiempo = time.time() - inicio
             if res['exito']:
                 resultados.append({
@@ -567,7 +679,7 @@ def informe_capitulo1():
         # 6. Raíces Múltiples
         try:
             inicio = time.time()
-            res = capitulo1.raices_multiples(x0, tol, niter, funcion)
+            res = capitulo1.raices_multiples(x0, tol, niter, funcion, 2, None, tol_str)
             tiempo = time.time() - inicio
             if res['exito']:
                 resultados.append({
