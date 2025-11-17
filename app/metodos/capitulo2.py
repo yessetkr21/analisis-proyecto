@@ -131,11 +131,23 @@ def jacobi(A, b, x0, tol, niter, tol_str=None):
 
         converge = bool(radio_espectral < 1)
 
+        # Extraer lista de errores para compatibilidad con código del profesor
+        errores_lista = []
+        for dato in tabla_datos:
+            if tipo_error == "relativo":
+                error_val = dato.get("error_rel1")
+            else:
+                error_val = dato.get("error_abs")
+
+            if error_val is not None:
+                errores_lista.append(error_val)
+
         return {
             "exito": bool(error < tol),
             "solucion": x_prev.tolist(),
             "iteraciones": int(c),
             "tabla": tabla_datos,
+            "errores": errores_lista,  # Lista de errores para comparación
             "radio_espectral": float(radio_espectral),
             "converge": converge,
             "tipo_error": tipo_error,
@@ -229,11 +241,23 @@ def gauss_seidel(A, b, x0, tol, niter, tol_str=None):
 
         converge = bool(radio_espectral < 1)
 
+        # Extraer lista de errores para compatibilidad con código del profesor
+        errores_lista = []
+        for dato in tabla_datos:
+            if tipo_error == "relativo":
+                error_val = dato.get("error_rel1")
+            else:
+                error_val = dato.get("error_abs")
+
+            if error_val is not None:
+                errores_lista.append(error_val)
+
         return {
             "exito": bool(error < tol),
             "solucion": x_prev.tolist(),
             "iteraciones": int(c),
             "tabla": tabla_datos,
+            "errores": errores_lista,  # Lista de errores para comparación
             "radio_espectral": float(radio_espectral),
             "converge": converge,
             "tipo_error": tipo_error,
@@ -334,11 +358,23 @@ def sor(A, b, x0, tol, niter, w, tol_str=None):
 
         converge = bool(radio_espectral < 1)
 
+        # Extraer lista de errores para compatibilidad con código del profesor
+        errores_lista = []
+        for dato in tabla_datos:
+            if tipo_error == "relativo":
+                error_val = dato.get("error_rel1")
+            else:
+                error_val = dato.get("error_abs")
+
+            if error_val is not None:
+                errores_lista.append(error_val)
+
         return {
             "exito": bool(error < tol),
             "solucion": x_prev.tolist(),
             "iteraciones": int(c),
             "tabla": tabla_datos,
+            "errores": errores_lista,  # Lista de errores para comparación
             "radio_espectral": float(radio_espectral),
             "converge": converge,
             "w": float(w),

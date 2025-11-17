@@ -169,7 +169,16 @@ function mostrarInformeCap2(resultado) {
     let html = '<div class="informe-container">';
     html += '<h3>📊 Informe Comparativo - Capítulo 2</h3>';
 
-    // Tabla comparativa
+    // Información sobre el tipo de error usado
+    const tipoErrorLabel = resultado.tipo_error_usado === 'relativo' ? 'Cifras Significativas (5e-X)' :
+                           resultado.tipo_error_usado === 'absoluto' ? 'Decimales Correctos (0.5e-X)' :
+                           'Tolerancia Genérica';
+    html += `<div class="info-box" style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196F3;">`;
+    html += `<p><strong>📌 Tipo de error usado para convergencia:</strong> ${tipoErrorLabel}</p>`;
+    html += '</div>';
+
+    // Tabla comparativa principal
+    html += '<h4>📋 Tabla Comparativa de Resultados</h4>';
     html += '<div class="table-container"><table>';
     html += '<thead><tr>';
     html += '<th>Método</th><th>Estado</th><th>Iteraciones</th><th>Error Final</th><th>Radio Espectral</th><th>Converge</th><th>Tiempo (s)</th>';
@@ -181,9 +190,9 @@ function mostrarInformeCap2(resultado) {
             html += `<td><strong>${r.metodo}</strong></td>`;
             html += `<td><span style="color: #27ae60;">✓ Exitoso</span></td>`;
             html += `<td>${r.iteraciones}</td>`;
-            html += `<td>${r.error.toExponential(4)}</td>`;
+            html += `<td>${r.error_final.toExponential(4)}</td>`;
             html += `<td>${r.radio_espectral.toFixed(6)}</td>`;
-            html += `<td>${r.converge ? '✓ Sí' : '✗ No'}</td>`;
+            html += `<td>${r.converge ? '✓ Sí (ρ<1)' : '✗ No (ρ≥1)'}</td>`;
             html += `<td>${(r.tiempo * 1000).toFixed(2)} ms</td>`;
             html += '</tr>';
         } else {
@@ -197,20 +206,59 @@ function mostrarInformeCap2(resultado) {
 
     html += '</tbody></table></div>';
 
+    // Tabla de todas las métricas de error
+    const exitosos = resultado.resultados.filter(r => r.exito);
+    if (exitosos.length > 0 && exitosos[0].error_abs !== null) {
+        html += '<h4 style="margin-top: 30px;">📊 Comparación de las 5 Métricas de Error</h4>';
+        html += '<div class="table-container"><table>';
+        html += '<thead><tr>';
+        html += '<th>Método</th><th>E. Absoluto</th><th>E. Relativo 1</th><th>E. Relativo 2</th><th>E. Relativo 3</th><th>E. Relativo 4</th>';
+        html += '</tr></thead><tbody>';
+
+        exitosos.forEach(r => {
+            html += '<tr>';
+            html += `<td><strong>${r.metodo}</strong></td>`;
+            html += `<td>${r.error_abs !== null ? r.error_abs.toExponential(4) : 'N/A'}</td>`;
+            html += `<td>${r.error_rel1 !== null ? r.error_rel1.toExponential(4) : 'N/A'}</td>`;
+            html += `<td>${r.error_rel2 !== null ? r.error_rel2.toExponential(4) : 'N/A'}</td>`;
+            html += `<td>${r.error_rel3 !== null ? r.error_rel3.toExponential(4) : 'N/A'}</td>`;
+            html += `<td>${r.error_rel4 !== null ? r.error_rel4.toExponential(4) : 'N/A'}</td>`;
+            html += '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+    }
+
     // Análisis y conclusiones
     html += '<div class="informe-analisis">';
     html += '<h4>🏆 Análisis y Conclusiones</h4>';
     html += '<div class="conclusiones">';
     html += `<p><strong>⚡ Método más rápido (menos iteraciones):</strong> <span class="highlight">${resultado.mejor_iteraciones}</span></p>`;
-    html += `<p><strong>🎯 Mejor método (menor error):</strong> <span class="highlight">${resultado.mejor_error}</span></p>`;
-    html += `<p><strong>📈 Métodos exitosos:</strong> ${resultado.estadisticas.exitosos} de ${resultado.estadisticas.total_metodos}</p>`;
+    html += `<p><strong>🎯 Mejor método (menor error absoluto):</strong> <span class="highlight">${resultado.mejor_error_abs}</span></p>`;
+    html += `<p><strong>📈 Mejor método (menor error relativo 1):</strong> <span class="highlight">${resultado.mejor_error_rel1}</span></p>`;
+    html += `<p><strong>📊 Mejor método (menor error relativo 2):</strong> <span class="highlight">${resultado.mejor_error_rel2}</span></p>`;
+    html += `<p><strong>✅ Métodos exitosos:</strong> ${resultado.estadisticas.exitosos} de ${resultado.estadisticas.total_metodos}</p>`;
 
     if (resultado.estadisticas.fallidos > 0) {
         html += `<p><strong>⚠️ Métodos que fallaron:</strong> ${resultado.estadisticas.fallidos}</p>`;
         html += '<p class="nota">Nota: Para garantizar convergencia, la matriz debe ser diagonalmente dominante o simétrica definida positiva.</p>';
     }
 
-    html += '</div></div>';
+    html += '</div>';
+
+    // Agregar leyenda de métricas
+    html += '<div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">';
+    html += '<h5 style="margin-top: 0;">📖 Explicación de las Métricas de Error:</h5>';
+    html += '<ul style="margin: 10px 0; padding-left: 20px;">';
+    html += '<li><strong>E. Absoluto:</strong> ||x<sup>(n)</sup> - x<sup>(n-1)</sup>||<sub>∞</sub></li>';
+    html += '<li><strong>E. Relativo 1:</strong> ||x<sup>(n)</sup> - x<sup>(n-1)</sup>|| / ||x<sup>(n)</sup>||<sub>∞</sub></li>';
+    html += '<li><strong>E. Relativo 2:</strong> ||x<sup>(n)</sup> - x<sup>(n-1)</sup>|| / ||x<sup>(n-1)</sup>||<sub>∞</sub></li>';
+    html += '<li><strong>E. Relativo 3:</strong> Equivalente a E. Relativo 1</li>';
+    html += '<li><strong>E. Relativo 4:</strong> Equivalente a E. Relativo 2</li>';
+    html += '</ul>';
+    html += '</div>';
+
+    html += '</div>';
     html += '</div>';
 
     // Estilos
@@ -240,6 +288,19 @@ function mostrarInformeCap2(resultado) {
         color: #666;
         font-style: italic;
         margin-top: 15px;
+    }
+    .info-box {
+        animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     </style>
     `;

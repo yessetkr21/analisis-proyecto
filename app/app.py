@@ -772,14 +772,22 @@ def informe_capitulo2():
             res = capitulo2.jacobi(A.copy(), b.copy(), x0.copy(), tol, niter, tol_str)
             tiempo = time.time() - inicio
             if res['exito']:
+                # Extraer última fila de la tabla para obtener todos los errores
+                ultima_fila = res['tabla'][-1] if res['tabla'] else None
                 resultados.append({
                     'metodo': 'Jacobi',
                     'exito': True,
                     'iteraciones': res['iteraciones'],
-                    'error': res['error_final'],
+                    'error_final': res['error_final'],
+                    'error_abs': ultima_fila['error_abs'] if ultima_fila else None,
+                    'error_rel1': ultima_fila['error_rel1'] if ultima_fila else None,
+                    'error_rel2': ultima_fila['error_rel2'] if ultima_fila else None,
+                    'error_rel3': ultima_fila['error_rel3'] if ultima_fila else None,
+                    'error_rel4': ultima_fila['error_rel4'] if ultima_fila else None,
                     'radio_espectral': res['radio_espectral'],
                     'converge': res['converge'],
-                    'tiempo': tiempo
+                    'tiempo': tiempo,
+                    'tipo_error': res.get('tipo_error', 'ninguno')
                 })
         except Exception as e:
             resultados.append({'metodo': 'Jacobi', 'exito': False, 'error_msg': str(e)})
@@ -790,14 +798,21 @@ def informe_capitulo2():
             res = capitulo2.gauss_seidel(A.copy(), b.copy(), x0.copy(), tol, niter, tol_str)
             tiempo = time.time() - inicio
             if res['exito']:
+                ultima_fila = res['tabla'][-1] if res['tabla'] else None
                 resultados.append({
                     'metodo': 'Gauss-Seidel',
                     'exito': True,
                     'iteraciones': res['iteraciones'],
-                    'error': res['error_final'],
+                    'error_final': res['error_final'],
+                    'error_abs': ultima_fila['error_abs'] if ultima_fila else None,
+                    'error_rel1': ultima_fila['error_rel1'] if ultima_fila else None,
+                    'error_rel2': ultima_fila['error_rel2'] if ultima_fila else None,
+                    'error_rel3': ultima_fila['error_rel3'] if ultima_fila else None,
+                    'error_rel4': ultima_fila['error_rel4'] if ultima_fila else None,
                     'radio_espectral': res['radio_espectral'],
                     'converge': res['converge'],
-                    'tiempo': tiempo
+                    'tiempo': tiempo,
+                    'tipo_error': res.get('tipo_error', 'ninguno')
                 })
         except Exception as e:
             resultados.append({'metodo': 'Gauss-Seidel', 'exito': False, 'error_msg': str(e)})
@@ -808,14 +823,21 @@ def informe_capitulo2():
             res = capitulo2.sor(A.copy(), b.copy(), x0.copy(), tol, niter, w, tol_str)
             tiempo = time.time() - inicio
             if res['exito']:
+                ultima_fila = res['tabla'][-1] if res['tabla'] else None
                 resultados.append({
                     'metodo': f'SOR (w={w})',
                     'exito': True,
                     'iteraciones': res['iteraciones'],
-                    'error': res['error_final'],
+                    'error_final': res['error_final'],
+                    'error_abs': ultima_fila['error_abs'] if ultima_fila else None,
+                    'error_rel1': ultima_fila['error_rel1'] if ultima_fila else None,
+                    'error_rel2': ultima_fila['error_rel2'] if ultima_fila else None,
+                    'error_rel3': ultima_fila['error_rel3'] if ultima_fila else None,
+                    'error_rel4': ultima_fila['error_rel4'] if ultima_fila else None,
                     'radio_espectral': res['radio_espectral'],
                     'converge': res['converge'],
-                    'tiempo': tiempo
+                    'tiempo': tiempo,
+                    'tipo_error': res.get('tipo_error', 'ninguno')
                 })
         except Exception as e:
             resultados.append({'metodo': 'SOR', 'exito': False, 'error_msg': str(e)})
@@ -830,15 +852,20 @@ def informe_capitulo2():
                 'resultados': resultados
             })
 
-        # Encontrar el mejor método
+        # Encontrar el mejor método por diferentes criterios
         mejor_iter = min(exitosos, key=lambda x: x['iteraciones'])
-        mejor_error = min(exitosos, key=lambda x: x['error'])
+        mejor_error_abs = min(exitosos, key=lambda x: x['error_abs'] if x['error_abs'] is not None else float('inf'))
+        mejor_error_rel1 = min(exitosos, key=lambda x: x['error_rel1'] if x['error_rel1'] is not None else float('inf'))
+        mejor_error_rel2 = min(exitosos, key=lambda x: x['error_rel2'] if x['error_rel2'] is not None else float('inf'))
 
         return jsonify({
             'exito': True,
             'resultados': resultados,
             'mejor_iteraciones': mejor_iter['metodo'],
-            'mejor_error': mejor_error['metodo'],
+            'mejor_error_abs': mejor_error_abs['metodo'],
+            'mejor_error_rel1': mejor_error_rel1['metodo'],
+            'mejor_error_rel2': mejor_error_rel2['metodo'],
+            'tipo_error_usado': exitosos[0].get('tipo_error', 'ninguno'),
             'estadisticas': {
                 'total_metodos': len(resultados),
                 'exitosos': len(exitosos),
@@ -854,6 +881,7 @@ def informe_capitulo2():
 def informe_capitulo3():
     """Genera informe comparativo de todos los métodos del Capítulo 3"""
     import time
+    import numpy as np
     try:
         data = request.get_json()
         puntos_str = data['puntos']
@@ -869,11 +897,18 @@ def informe_capitulo3():
                 tiempo = time.time() - inicio
 
                 if res['exito']:
+                    # Calcular error promedio si está disponible
+                    error_promedio = None
+                    if 'errores' in res and res['errores']:
+                        error_promedio = float(np.mean(res['errores']))
+
                     resultados.append({
                         'metodo': nombre,
                         'exito': True,
                         'polinomio': res.get('polinomio', 'N/A'),
-                        'tiempo': tiempo
+                        'tiempo': tiempo,
+                        'error_promedio': error_promedio,
+                        'errores': res.get('errores', [])
                     })
             except Exception as e:
                 resultados.append({'metodo': nombre, 'exito': False, 'error_msg': str(e)})
@@ -887,16 +922,40 @@ def informe_capitulo3():
                 'resultados': resultados
             })
 
+        # Identificar método más rápido
         mas_rapido = min(exitosos, key=lambda x: x['tiempo'])
+
+        # Identificar método con menor error (solo métodos polinomiales que tienen errores)
+        exitosos_con_error = [r for r in exitosos if r.get('error_promedio') is not None]
+
+        menor_error = None
+        mejor_metodo = None
+
+        if exitosos_con_error:
+            menor_error = min(exitosos_con_error, key=lambda x: x['error_promedio'])
+
+            # Determinar mejor método general (balance entre error y tiempo)
+            # Para métodos polinomiales (Vandermonde, Newton, Lagrange), todos dan el mismo resultado
+            # así que el mejor es el más rápido entre ellos
+            metodos_polinomiales = [r for r in exitosos_con_error if r['metodo'] in ['Vandermonde', 'Newton Interpolante', 'Lagrange']]
+
+            if metodos_polinomiales:
+                mejor_metodo = min(metodos_polinomiales, key=lambda x: x['tiempo'])
+            else:
+                mejor_metodo = menor_error
 
         return jsonify({
             'exito': True,
             'resultados': resultados,
             'mas_rapido': mas_rapido['metodo'],
+            'menor_error': menor_error['metodo'] if menor_error else 'N/A',
+            'mejor_metodo': mejor_metodo['metodo'] if mejor_metodo else mas_rapido['metodo'],
             'estadisticas': {
                 'total_metodos': len(resultados),
                 'exitosos': len(exitosos),
-                'fallidos': len(resultados) - len(exitosos)
+                'fallidos': len(resultados) - len(exitosos),
+                'error_minimo': menor_error['error_promedio'] if menor_error else None,
+                'tiempo_minimo': mas_rapido['tiempo']
             }
         })
 

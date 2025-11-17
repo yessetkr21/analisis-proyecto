@@ -167,7 +167,7 @@ function mostrarInforme(resultado) {
     // Tabla comparativa
     html += '<div class="table-container"><table>';
     html += '<thead><tr>';
-    html += '<th>Método</th><th>Estado</th><th>Polinomio/Spline</th><th>Tiempo (s)</th>';
+    html += '<th>Método</th><th>Estado</th><th>Error Promedio</th><th>Tiempo (ms)</th><th>Polinomio/Spline</th>';
     html += '</tr></thead><tbody>';
 
     resultado.resultados.forEach(r => {
@@ -175,14 +175,23 @@ function mostrarInforme(resultado) {
             html += '<tr>';
             html += `<td><strong>${r.metodo}</strong></td>`;
             html += `<td><span style="color: #27ae60;">✓ Exitoso</span></td>`;
-            html += `<td><code style="font-size: 0.85em;">${r.polinomio ? r.polinomio.substring(0, 50) + '...' : 'N/A'}</code></td>`;
-            html += `<td>${(r.tiempo * 1000).toFixed(2)} ms</td>`;
+
+            // Mostrar error promedio
+            if (r.error_promedio !== null && r.error_promedio !== undefined) {
+                const errorFormatted = r.error_promedio.toExponential(2);
+                html += `<td><code>${errorFormatted}</code></td>`;
+            } else {
+                html += `<td><span style="color: #95a5a6;">N/A</span></td>`;
+            }
+
+            html += `<td>${(r.tiempo * 1000).toFixed(2)}</td>`;
+            html += `<td><code style="font-size: 0.85em; max-width: 250px; display: block; overflow: hidden; text-overflow: ellipsis;">${r.polinomio ? r.polinomio.substring(0, 40) + '...' : 'N/A'}</code></td>`;
             html += '</tr>';
         } else {
             html += '<tr>';
             html += `<td><strong>${r.metodo}</strong></td>`;
             html += `<td><span style="color: #e74c3c;">✗ Falló</span></td>`;
-            html += `<td colspan="2">${r.error_msg || 'Error desconocido'}</td>`;
+            html += `<td colspan="3">${r.error_msg || 'Error desconocido'}</td>`;
             html += '</tr>';
         }
     });
@@ -193,15 +202,25 @@ function mostrarInforme(resultado) {
     html += '<div class="informe-analisis">';
     html += '<h4>🏆 Análisis y Conclusiones</h4>';
     html += '<div class="conclusiones">';
-    html += `<p><strong>⚡ Método más rápido:</strong> <span class="highlight">${resultado.mas_rapido}</span></p>`;
+
+    // Mostrar las tres métricas principales
+    html += `<p><strong>🎯 Mejor Método General:</strong> <span class="highlight-best">${resultado.mejor_metodo}</span></p>`;
+    html += `<p><strong>⚡ Método más rápido:</strong> <span class="highlight-rapido">${resultado.mas_rapido}</span> (${(resultado.estadisticas.tiempo_minimo * 1000).toFixed(2)} ms)</p>`;
+
+    if (resultado.menor_error && resultado.menor_error !== 'N/A') {
+        const errorMin = resultado.estadisticas.error_minimo ? resultado.estadisticas.error_minimo.toExponential(2) : 'N/A';
+        html += `<p><strong>📉 Método con menor error:</strong> <span class="highlight-error">${resultado.menor_error}</span> (${errorMin})</p>`;
+    }
+
     html += `<p><strong>📈 Métodos exitosos:</strong> ${resultado.estadisticas.exitosos} de ${resultado.estadisticas.total_metodos}</p>`;
 
     html += '<div class="recomendaciones">';
     html += '<h5>💡 Recomendaciones</h5>';
     html += '<ul>';
-    html += '<li><strong>Vandermonde, Newton y Lagrange:</strong> Generan el mismo polinomio interpolador (de grado n-1)</li>';
-    html += '<li><strong>Spline Lineal:</strong> Conecta puntos con líneas rectas, más simple pero menos suave</li>';
-    html += '<li><strong>Spline Cúbico:</strong> Más suave y natural, recomendado para datos con variación continua</li>';
+    html += '<li><strong>Vandermonde, Newton y Lagrange:</strong> Generan el mismo polinomio interpolador de grado n-1 con error de interpolación ~0 (precisión de máquina)</li>';
+    html += '<li><strong>Spline Lineal:</strong> Conecta puntos con líneas rectas, más simple pero menos suave. Útil para datos discretos</li>';
+    html += '<li><strong>Spline Cúbico:</strong> Más suave y natural, recomendado para datos con variación continua. Mejor para visualización</li>';
+    html += '<li><strong>Rendimiento:</strong> Para interpolación polinomial, elige el método más rápido (generalmente Lagrange o Newton)</li>';
     html += '</ul>';
     html += '</div>';
 
@@ -234,11 +253,30 @@ function mostrarInforme(resultado) {
         font-weight: bold;
         font-size: 1.1em;
     }
+    .highlight-best {
+        color: #27ae60;
+        font-weight: bold;
+        font-size: 1.2em;
+        background: #d5f4e6;
+        padding: 4px 12px;
+        border-radius: 4px;
+    }
+    .highlight-rapido {
+        color: #3498db;
+        font-weight: bold;
+        font-size: 1.05em;
+    }
+    .highlight-error {
+        color: #e67e22;
+        font-weight: bold;
+        font-size: 1.05em;
+    }
     .recomendaciones {
         background: white;
         padding: 15px;
         border-radius: 6px;
         margin-top: 15px;
+        border-left: 3px solid #3498db;
     }
     .recomendaciones ul {
         margin: 10px 0;
@@ -247,6 +285,28 @@ function mostrarInforme(resultado) {
     .recomendaciones li {
         margin: 8px 0;
         line-height: 1.5;
+    }
+    .table-container {
+        overflow-x: auto;
+        margin: 15px 0;
+    }
+    .table-container table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .table-container th {
+        background: #9b59b6;
+        color: white;
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+    }
+    .table-container td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #ecf0f1;
+    }
+    .table-container tr:hover {
+        background: #f8f9fa;
     }
     .polinomio-box, .segmentos-box {
         background: #f5f5f5;
