@@ -19,6 +19,13 @@ async function ejecutarMetodo(metodo) {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData);
 
+    // VALIDACIONES FRONTEND
+    const validacion = validarDatosCapitulo2(data, metodo);
+    if (!validacion.valido) {
+        mostrarError(metodo, validacion.mensaje);
+        return;
+    }
+
     mostrarLoading(metodo, true);
     ocultarResultados(metodo);
 
@@ -37,10 +44,101 @@ async function ejecutarMetodo(metodo) {
             await graficarConvergencia(resultado, metodo);
         }
     } catch (error) {
-        mostrarError(metodo, error.message);
+        mostrarError(metodo, `Error de conexión: ${error.message}`);
     } finally {
         mostrarLoading(metodo, false);
     }
+}
+
+// Función de validación para Capítulo 2
+function validarDatosCapitulo2(data, metodo) {
+    // 1. Validar que la matriz no esté vacía
+    if (!data.matriz || data.matriz.trim() === '') {
+        return { valido: false, mensaje: '[ERROR] Error: La matriz A es obligatoria. Ejemplo: 10,1,1;2,10,1;2,2,10' };
+    }
+
+    // 2. Validar que el vector b no esté vacío
+    if (!data.vector_b || data.vector_b.trim() === '') {
+        return { valido: false, mensaje: '[ERROR] Error: El vector b es obligatorio. Ejemplo: 12,13,14' };
+    }
+
+    // 3. Validar tolerancia
+    if (!data.tol || data.tol.trim() === '') {
+        return { valido: false, mensaje: '[ERROR] Error: La tolerancia es obligatoria. Ejemplo: 1e-6 o 0.0001' };
+    }
+
+    // Validar que la tolerancia sea un número válido
+    const tol = parseFloat(data.tol);
+    if (isNaN(tol) || tol <= 0) {
+        return { valido: false, mensaje: `[ERROR] Error: La tolerancia debe ser un número positivo. Valor ingresado: "${data.tol}"` };
+    }
+
+    if (tol >= 1) {
+        return { valido: false, mensaje: '[ERROR] Error: La tolerancia debe ser menor que 1 (ejemplo: 1e-6, 0.0001)' };
+    }
+
+    // 4. Validar iteraciones máximas
+    if (!data.niter || data.niter.trim() === '') {
+        return { valido: false, mensaje: '[ERROR] Error: El número de iteraciones es obligatorio. Ejemplo: 100' };
+    }
+
+    const niter = parseInt(data.niter);
+    if (isNaN(niter) || niter <= 0) {
+        return { valido: false, mensaje: `[ERROR] Error: Las iteraciones deben ser un número entero positivo. Valor ingresado: "${data.niter}"` };
+    }
+
+    if (niter > 10000) {
+        return { valido: false, mensaje: '[ERROR] Error: Número de iteraciones muy grande (máximo: 10000)' };
+    }
+
+    // 5. Validar formato de matriz
+    const filas = data.matriz.trim().split(';');
+    if (filas.length === 0) {
+        return { valido: false, mensaje: '[ERROR] Error: La matriz debe tener al menos una fila. Separa filas con ";"' };
+    }
+
+    if (filas.length > 7) {
+        return { valido: false, mensaje: `[ERROR] Error: La matriz no puede tener más de 7 filas. Filas ingresadas: ${filas.length}` };
+    }
+
+    // Validar que todas las filas tengan el mismo número de elementos
+    const nCols = filas[0].split(',').length;
+    for (let i = 1; i < filas.length; i++) {
+        const cols = filas[i].split(',').length;
+        if (cols !== nCols) {
+            return { valido: false, mensaje: `[ERROR] Error: Todas las filas deben tener el mismo número de columnas. Fila 1: ${nCols} cols, Fila ${i+1}: ${cols} cols` };
+        }
+    }
+
+    // Validar que sea matriz cuadrada
+    if (filas.length !== nCols) {
+        return { valido: false, mensaje: `[ERROR] Error: La matriz debe ser cuadrada. Dimensión actual: ${filas.length}x${nCols}` };
+    }
+
+    // 6. Validar formato del vector b
+    const elementosB = data.vector_b.trim().split(',');
+    if (elementosB.length !== filas.length) {
+        return { valido: false, mensaje: `[ERROR] Error: El vector b debe tener ${filas.length} elementos (igual al número de filas de A). Elementos en b: ${elementosB.length}` };
+    }
+
+    // 7. Validar factor w para SOR
+    if (metodo === 'sor') {
+        if (!data.w || data.w.trim() === '') {
+            return { valido: false, mensaje: '[ERROR] Error: El factor de relajación w es obligatorio para SOR. Valor recomendado: 1.5' };
+        }
+
+        const w = parseFloat(data.w);
+        if (isNaN(w) || w <= 0 || w >= 2) {
+            return { valido: false, mensaje: `[ERROR] Error: El factor w debe estar entre 0 y 2. Valor ingresado: "${data.w}"` };
+        }
+    }
+
+    return { valido: true };
+}
+
+// Guardar resultados globalmente para poder actualizar precisión
+if (!window.lastResults) {
+    window.lastResults = {};
 }
 
 // Mostrar resultados
@@ -48,11 +146,15 @@ function mostrarResultados(metodo, resultado) {
     const resultadosDiv = document.getElementById(`resultados-${metodo}`);
     resultadosDiv.classList.add('show');
 
+    // Guardar resultado para poder cambiar precisión después
+    window.lastResults[metodo] = resultado;
+
     let html = '';
 
     if (!resultado.exito) {
         html = `<div class="result-message error">${resultado.mensaje}</div>`;
     } else {
+        const decimalesSolucion = mostrarAltaPrecision ? 12 : 6;
         html = `
             <div class="result-message success">${resultado.mensaje}</div>
             <div class="result-stats">
@@ -60,12 +162,12 @@ function mostrarResultados(metodo, resultado) {
                 <p><strong>¿Converge?:</strong> ${resultado.converge ? '✓ Sí (ρ < 1)' : '✗ No (ρ ≥ 1)'}</p>
                 <p><strong>Iteraciones:</strong> ${resultado.iteraciones}</p>
                 <p><strong>Error final:</strong> ${resultado.error_final?.toExponential(4) || 'N/A'}</p>
-                <p><strong>Solución:</strong> [${resultado.solucion?.map(v => v.toFixed(6)).join(', ') || 'N/A'}]</p>
+                <p><strong>Solución:</strong> [${resultado.solucion?.map(v => v.toFixed(decimalesSolucion)).join(', ') || 'N/A'}]</p>
             </div>
         `;
 
         if (resultado.tabla) {
-            html += crearTablaIteraciones(resultado.tabla);
+            html += crearTablaIteraciones(resultado.tabla, metodo);
         }
     }
 
@@ -77,59 +179,95 @@ function mostrarResultados(metodo, resultado) {
     }
 }
 
-// Crear tabla de iteraciones con 5 métricas de error
-function crearTablaIteraciones(tabla) {
+// Variable global para controlar precisión de decimales
+let mostrarAltaPrecision = false;
+
+// Crear tabla de iteraciones simplificada (como el código del profesor)
+function crearTablaIteraciones(tabla, metodo) {
     if (!tabla || tabla.length === 0) return '';
 
-    let html = '<div class="table-container"><table><thead><tr>';
+    let html = '';
+
+    // Botón para alternar precisión
+    html += `
+    <div style="margin-bottom: 10px; text-align: right;">
+        <button onclick="alternarPrecision('${metodo}')" class="btn-precision" id="btn-precision-${metodo}">
+            🔍 Mostrar más decimales
+        </button>
+    </div>
+    `;
+
+    html += '<div class="table-container"><table id="tabla-' + metodo + '"><thead><tr>';
     html += '<th>Iteración</th>';
-    
+
     // Encabezados para cada variable
     const numVars = tabla[0].x.length;
     for (let i = 0; i < numVars; i++) {
         html += `<th>x${i+1}</th>`;
     }
-    // Encabezados de las 5 métricas de error
-    html += '<th>E. Absoluto</th>';
-    html += '<th>E. Relativo 1</th>';
-    html += '<th>E. Relativo 2</th>';
-    html += '<th>E. Relativo 3</th>';
-    html += '<th>E. Relativo 4</th>';
+    // Solo un error
+    html += '<th>Error</th>';
     html += '</tr></thead><tbody>';
 
-    // Filas
+    // Filas - usar precisión según estado
+    const decimales = mostrarAltaPrecision ? 12 : 6;
     tabla.forEach(fila => {
         html += '<tr>';
         html += `<td><strong>${fila.iter}</strong></td>`;
         fila.x.forEach(val => {
-            html += `<td>${val.toFixed(6)}</td>`;
+            html += `<td class="valor-x">${val.toFixed(decimales)}</td>`;
         });
-        // Mostrar las 5 métricas de error
-        html += `<td>${fila.error_abs !== null ? fila.error_abs.toExponential(4) : '-'}</td>`;
-        html += `<td>${fila.error_rel1 !== null ? fila.error_rel1.toExponential(4) : '-'}</td>`;
-        html += `<td>${fila.error_rel2 !== null ? fila.error_rel2.toExponential(4) : '-'}</td>`;
-        html += `<td>${fila.error_rel3 !== null ? fila.error_rel3.toExponential(4) : '-'}</td>`;
-        html += `<td>${fila.error_rel4 !== null ? fila.error_rel4.toExponential(4) : '-'}</td>`;
+        // Mostrar el error
+        html += `<td>${fila.error !== null && fila.error !== undefined ? fila.error.toExponential(4) : '-'}</td>`;
         html += '</tr>';
     });
 
     html += '</tbody></table></div>';
-    
-    // Agregar leyenda de métricas
+
+    // Agregar nota sobre el error
     html += `
     <div class="metricas-legend">
-        <h4>Explicación de Métricas de Error (norma infinito):</h4>
-        <ul>
-            <li><strong>E. Absoluto:</strong> ||x<sup>(n)</sup> - x<sup>(n-1)</sup>||<sub>∞</sub></li>
-            <li><strong>E. Relativo 1:</strong> ||x<sup>(n)</sup> - x<sup>(n-1)</sup>|| / ||x<sup>(n)</sup>||<sub>∞</sub></li>
-            <li><strong>E. Relativo 2:</strong> ||x<sup>(n)</sup> - x<sup>(n-1)</sup>|| / ||x<sup>(n-1)</sup>||<sub>∞</sub></li>
-            <li><strong>E. Relativo 3:</strong> Equivalente a E. Relativo 1</li>
-            <li><strong>E. Relativo 4:</strong> Equivalente a E. Relativo 2</li>
-        </ul>
+        <p><strong>Error:</strong> ||x<sup>(n)</sup> - x<sup>(n-1)</sup>||<sub>∞</sub> (norma infinito)</p>
     </div>
     `;
-    
+
     return html;
+}
+
+// Función para alternar entre 6 y 12 decimales
+function alternarPrecision(metodo) {
+    mostrarAltaPrecision = !mostrarAltaPrecision;
+
+    // Obtener los datos originales del último resultado
+    const resultadosDiv = document.getElementById(`resultados-${metodo}`);
+    if (!resultadosDiv || !window.lastResults || !window.lastResults[metodo]) {
+        console.error('No hay datos para actualizar');
+        return;
+    }
+
+    const resultado = window.lastResults[metodo];
+
+    // Regenerar solo la tabla
+    const decimales = mostrarAltaPrecision ? 12 : 6;
+    const tabla = resultado.tabla;
+
+    // Actualizar solo los valores de x en la tabla
+    const tablaDom = document.getElementById(`tabla-${metodo}`);
+    if (tablaDom) {
+        const filas = tablaDom.querySelectorAll('tbody tr');
+        filas.forEach((fila, index) => {
+            const celdas = fila.querySelectorAll('.valor-x');
+            celdas.forEach((celda, i) => {
+                celda.textContent = tabla[index].x[i].toFixed(decimales);
+            });
+        });
+    }
+
+    // Actualizar texto del botón
+    const btn = document.getElementById(`btn-precision-${metodo}`);
+    if (btn) {
+        btn.textContent = mostrarAltaPrecision ? '🔍 Mostrar menos decimales' : '🔍 Mostrar más decimales';
+    }
 }
 
 // Generar informe comparativo del Capítulo 2
@@ -137,6 +275,25 @@ async function generarInformeCap2() {
     const form = document.getElementById('form-informe-cap2');
     const formData = new FormData(form);
     const data = Object.fromEntries(formData);
+
+    // VALIDACIONES FRONTEND
+    const validacion = validarDatosCapitulo2(data, 'informe');
+    if (!validacion.valido) {
+        mostrarErrorInforme('informe-cap2', validacion.mensaje);
+        return;
+    }
+
+    // Validar factor w para el informe (necesario para SOR)
+    if (!data.w || data.w.trim() === '') {
+        mostrarErrorInforme('informe-cap2', '[ERROR] Error: El factor w es obligatorio para ejecutar SOR en el informe. Valor recomendado: 1.5');
+        return;
+    }
+
+    const w = parseFloat(data.w);
+    if (isNaN(w) || w <= 0 || w >= 2) {
+        mostrarErrorInforme('informe-cap2', `[ERROR] Error: El factor w debe estar entre 0 y 2. Valor ingresado: "${data.w}"`);
+        return;
+    }
 
     mostrarLoading('informe-cap2', true);
     document.getElementById('resultados-informe-cap2').classList.remove('show');
@@ -151,7 +308,7 @@ async function generarInformeCap2() {
         const resultado = await response.json();
         mostrarInformeCap2(resultado);
     } catch (error) {
-        mostrarErrorInforme('informe-cap2', error.message);
+        mostrarErrorInforme('informe-cap2', `Error de conexión: ${error.message}`);
     } finally {
         mostrarLoading('informe-cap2', false);
     }
@@ -169,12 +326,9 @@ function mostrarInformeCap2(resultado) {
     let html = '<div class="informe-container">';
     html += '<h3>📊 Informe Comparativo - Capítulo 2</h3>';
 
-    // Información sobre el tipo de error usado
-    const tipoErrorLabel = resultado.tipo_error_usado === 'relativo' ? 'Cifras Significativas (5e-X)' :
-                           resultado.tipo_error_usado === 'absoluto' ? 'Decimales Correctos (0.5e-X)' :
-                           'Tolerancia Genérica';
-    html += `<div class="info-box" style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196F3;">`;
-    html += `<p><strong>📌 Tipo de error usado para convergencia:</strong> ${tipoErrorLabel}</p>`;
+    // Información sobre el cálculo del error
+    html += `<div class="info-box" style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196F3; color: #1565c0;">`;
+    html += `<p style="color: #1565c0; margin: 0;"><strong>📌 Criterio de convergencia:</strong> Error calculado con norma infinito ||x<sup>(n)</sup> - x<sup>(n-1)</sup>||<sub>∞</sub></p>`;
     html += '</div>';
 
     // Tabla comparativa principal
@@ -206,37 +360,12 @@ function mostrarInformeCap2(resultado) {
 
     html += '</tbody></table></div>';
 
-    // Tabla de todas las métricas de error
-    const exitosos = resultado.resultados.filter(r => r.exito);
-    if (exitosos.length > 0 && exitosos[0].error_abs !== null) {
-        html += '<h4 style="margin-top: 30px;">📊 Comparación de las 5 Métricas de Error</h4>';
-        html += '<div class="table-container"><table>';
-        html += '<thead><tr>';
-        html += '<th>Método</th><th>E. Absoluto</th><th>E. Relativo 1</th><th>E. Relativo 2</th><th>E. Relativo 3</th><th>E. Relativo 4</th>';
-        html += '</tr></thead><tbody>';
-
-        exitosos.forEach(r => {
-            html += '<tr>';
-            html += `<td><strong>${r.metodo}</strong></td>`;
-            html += `<td>${r.error_abs !== null ? r.error_abs.toExponential(4) : 'N/A'}</td>`;
-            html += `<td>${r.error_rel1 !== null ? r.error_rel1.toExponential(4) : 'N/A'}</td>`;
-            html += `<td>${r.error_rel2 !== null ? r.error_rel2.toExponential(4) : 'N/A'}</td>`;
-            html += `<td>${r.error_rel3 !== null ? r.error_rel3.toExponential(4) : 'N/A'}</td>`;
-            html += `<td>${r.error_rel4 !== null ? r.error_rel4.toExponential(4) : 'N/A'}</td>`;
-            html += '</tr>';
-        });
-
-        html += '</tbody></table></div>';
-    }
-
     // Análisis y conclusiones
     html += '<div class="informe-analisis">';
     html += '<h4>🏆 Análisis y Conclusiones</h4>';
     html += '<div class="conclusiones">';
     html += `<p><strong>⚡ Método más rápido (menos iteraciones):</strong> <span class="highlight">${resultado.mejor_iteraciones}</span></p>`;
-    html += `<p><strong>🎯 Mejor método (menor error absoluto):</strong> <span class="highlight">${resultado.mejor_error_abs}</span></p>`;
-    html += `<p><strong>📈 Mejor método (menor error relativo 1):</strong> <span class="highlight">${resultado.mejor_error_rel1}</span></p>`;
-    html += `<p><strong>📊 Mejor método (menor error relativo 2):</strong> <span class="highlight">${resultado.mejor_error_rel2}</span></p>`;
+    html += `<p><strong>🎯 Método con menor error final:</strong> <span class="highlight">${resultado.mejor_error}</span></p>`;
     html += `<p><strong>✅ Métodos exitosos:</strong> ${resultado.estadisticas.exitosos} de ${resultado.estadisticas.total_metodos}</p>`;
 
     if (resultado.estadisticas.fallidos > 0) {
@@ -245,19 +374,6 @@ function mostrarInformeCap2(resultado) {
     }
 
     html += '</div>';
-
-    // Agregar leyenda de métricas
-    html += '<div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">';
-    html += '<h5 style="margin-top: 0;">📖 Explicación de las Métricas de Error:</h5>';
-    html += '<ul style="margin: 10px 0; padding-left: 20px;">';
-    html += '<li><strong>E. Absoluto:</strong> ||x<sup>(n)</sup> - x<sup>(n-1)</sup>||<sub>∞</sub></li>';
-    html += '<li><strong>E. Relativo 1:</strong> ||x<sup>(n)</sup> - x<sup>(n-1)</sup>|| / ||x<sup>(n)</sup>||<sub>∞</sub></li>';
-    html += '<li><strong>E. Relativo 2:</strong> ||x<sup>(n)</sup> - x<sup>(n-1)</sup>|| / ||x<sup>(n-1)</sup>||<sub>∞</sub></li>';
-    html += '<li><strong>E. Relativo 3:</strong> Equivalente a E. Relativo 1</li>';
-    html += '<li><strong>E. Relativo 4:</strong> Equivalente a E. Relativo 2</li>';
-    html += '</ul>';
-    html += '</div>';
-
     html += '</div>';
     html += '</div>';
 
@@ -358,23 +474,15 @@ async function graficarConvergencia(resultado, metodo) {
             return;
         }
 
-        // Determinar el tipo de error según el resultado
-        const tipoError = resultado.tipo_error || 'absoluto';
-
         // Generar puntos para graficar
         const tabla_datos = resultado.tabla;
         const iteraciones = [];
         const errores = [];
 
         tabla_datos.forEach(fila => {
-            if (fila.error_abs !== null && fila.error_abs !== undefined) {
+            if (fila.error !== null && fila.error !== undefined) {
                 iteraciones.push(fila.iter);
-                // Seleccionar el tipo de error apropiado
-                if (tipoError === 'relativo') {
-                    errores.push(fila.error_rel1);
-                } else {
-                    errores.push(fila.error_abs);
-                }
+                errores.push(fila.error);
             }
         });
 
@@ -440,15 +548,30 @@ async function graficarConvergencia(resultado, metodo) {
         });
 
         // Agregar título
-        const tipoErrorLabel = tipoError === 'relativo' ? 'Error Relativo' : 'Error Absoluto';
         desmosCalculator.setExpression({
             id: 'titulo',
-            latex: `\\text{Convergencia: ${tipoErrorLabel}}`,
+            latex: `\\text{Convergencia (Norma Infinito)}`,
             color: '#000000',
             hidden: true
         });
 
     } catch (error) {
         console.error('Error al graficar convergencia:', error);
+    }
+}
+
+// Función para toggle del botón de ayuda
+function toggleAyudaGeneral() {
+    const content = document.getElementById('ayuda-general-content');
+    const button = document.querySelector('.ayuda-toggle');
+
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        button.textContent = 'Ocultar ayuda (Click aqui)';
+        button.style.background = '#27ae60';
+    } else {
+        content.style.display = 'none';
+        button.textContent = 'Formato de Entrada (Click para ayuda)';
+        button.style.background = '#3498db';
     }
 }

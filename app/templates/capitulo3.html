@@ -6,12 +6,6 @@
 {% block header_subtitle %}Métodos de interpolación polinomial y splines{% endblock %}
 
 {% block content %}
-<div class="help-box">
-    <h4>Formato de Entrada de Puntos</h4>
-    <p>Separa puntos con ";" y coordenadas (x,y) con ",". Ejemplo: <code>0,1;1,2;2,1.5;3,3</code></p>
-    <p><strong>Restricciones:</strong> Mínimo 2 puntos, máximo 8 puntos. No puede haber valores de x repetidos.</p>
-</div>
-
 <div class="metodos-container">
     <div class="metodos-sidebar">
         <h3>Métodos Disponibles</h3>
@@ -25,6 +19,173 @@
     </div>
 
     <div class="metodo-content">
+        <!-- Ayuda General -->
+        <div class="ayuda-general-banner">
+            <button class="ayuda-toggle" onclick="toggleAyudaGeneral()">
+                Formato de Entrada (Click para ayuda)
+            </button>
+            <div id="ayuda-general-content" class="ayuda-general-content" style="display: none;">
+                <h3>Guia de Formato de Entrada - Capitulo 3</h3>
+
+                <div class="ayuda-section">
+                    <h4>Formato de Puntos (x, y)</h4>
+                    <p><strong>Sintaxis:</strong> Separa puntos con ";" y coordenadas con ","</p>
+                    <p><strong>Formato general:</strong> <code>x1,y1;x2,y2;x3,y3;...</code></p>
+
+                    <table class="syntax-table">
+                        <tr><th>Numero de Puntos</th><th>Ejemplo</th></tr>
+                        <tr><td>2 puntos</td><td><code>0,1;1,2</code></td></tr>
+                        <tr><td>3 puntos</td><td><code>0,1;1,2;2,1.5</code></td></tr>
+                        <tr><td>4 puntos</td><td><code>0,1;1,2;2,1.5;3,3</code></td></tr>
+                        <tr><td>5 puntos</td><td><code>0,1;1,2;2,1.5;3,3;4,2.5</code></td></tr>
+                    </table>
+                </div>
+
+                <div class="ayuda-section">
+                    <h4>Restricciones Importantes</h4>
+                    <div class="info-box">
+                        <ul>
+                            <li><strong>Minimo:</strong> 2 puntos</li>
+                            <li><strong>Maximo:</strong> 8 puntos</li>
+                            <li><strong>Valores x unicos:</strong> No puede haber valores de x repetidos</li>
+                        </ul>
+                    </div>
+                    <p><strong>Ejemplos validos:</strong></p>
+                    <ul>
+                        <li><code>0,1;1,2;2,3</code> - OK (x son diferentes: 0, 1, 2)</li>
+                        <li><code>-1,5;0,3;1,7</code> - OK (x negativos permitidos)</li>
+                        <li><code>0.5,1;1.5,2;2.5,3</code> - OK (decimales permitidos)</li>
+                    </ul>
+                    <p><strong>Ejemplos invalidos:</strong></p>
+                    <ul>
+                        <li><code>1,2;1,3;2,4</code> - ERROR (x=1 se repite)</li>
+                        <li><code>0,1</code> - ERROR (solo 1 punto, minimo 2)</li>
+                    </ul>
+                </div>
+
+                <div class="ayuda-section">
+                    <h4>Metodos de Interpolacion</h4>
+                    <table class="syntax-table">
+                        <tr><th>Metodo</th><th>Descripcion</th><th>Cuando Usar</th></tr>
+                        <tr>
+                            <td><strong>Vandermonde</strong></td>
+                            <td>Resuelve sistema usando matriz de Vandermonde</td>
+                            <td>Pocos puntos (2-5), fines educativos</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Newton</strong></td>
+                            <td>Usa diferencias divididas</td>
+                            <td>Mejor estabilidad numerica, puntos no equiespaciados</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Lagrange</strong></td>
+                            <td>Formula directa de Lagrange</td>
+                            <td>Evaluacion directa, puntos arbitrarios</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Spline Lineal</strong></td>
+                            <td>Segmentos de lineas rectas</td>
+                            <td>Datos con tendencia lineal por tramos</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Spline Cubico</strong></td>
+                            <td>Polinomios de grado 3 suaves</td>
+                            <td>Curvas suaves, mejor interpolacion visual</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="ayuda-section">
+                    <h4>Grado del Polinomio</h4>
+                    <div class="info-box">
+                        <p>Para los metodos <strong>Vandermonde, Newton y Lagrange</strong>:</p>
+                        <p style="text-align: center; font-size: 1.1em; margin: 10px 0;">
+                            <strong>Grado = Numero de puntos - 1</strong>
+                        </p>
+                        <ul>
+                            <li>2 puntos → Polinomio de grado 1 (linea recta)</li>
+                            <li>3 puntos → Polinomio de grado 2 (parabola)</li>
+                            <li>4 puntos → Polinomio de grado 3 (cubica)</li>
+                            <li>n puntos → Polinomio de grado n-1</li>
+                        </ul>
+                        <p class="tip"><strong>Nota:</strong> Polinomios de grado muy alto pueden tener oscilaciones (fenomeno de Runge)</p>
+                    </div>
+                </div>
+
+                <div class="ayuda-section">
+                    <h4>Splines vs Polinomios</h4>
+                    <table class="syntax-table">
+                        <tr><th>Aspecto</th><th>Polinomios Globales</th><th>Splines</th></tr>
+                        <tr>
+                            <td>Grado</td>
+                            <td>Crece con numero de puntos</td>
+                            <td>Fijo (1 o 3)</td>
+                        </tr>
+                        <tr>
+                            <td>Oscilaciones</td>
+                            <td>Pueden aparecer (Runge)</td>
+                            <td>Minimas o nulas</td>
+                        </tr>
+                        <tr>
+                            <td>Suavidad</td>
+                            <td>Muy suave (C∞)</td>
+                            <td>Lineal: C⁰, Cubico: C²</td>
+                        </tr>
+                        <tr>
+                            <td>Mejor para</td>
+                            <td>Pocos puntos, formula exacta</td>
+                            <td>Muchos puntos, visualizacion</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="ayuda-section">
+                    <h4>Ejemplos Completos</h4>
+
+                    <p><strong>Ejemplo 1: Parabola simple (3 puntos)</strong></p>
+                    <ul>
+                        <li>Puntos: <code>0,0;1,1;2,0</code></li>
+                        <li>Grado: 2 (parabola)</li>
+                        <li>Recomendado: Vandermonde, Newton o Lagrange</li>
+                    </ul>
+
+                    <p><strong>Ejemplo 2: Datos de temperatura (5 puntos)</strong></p>
+                    <ul>
+                        <li>Puntos: <code>0,20;1,22;2,25;3,23;4,21</code></li>
+                        <li>Horas vs Temperatura</li>
+                        <li>Recomendado: Spline Cubico (curva suave)</li>
+                    </ul>
+
+                    <p><strong>Ejemplo 3: Datos experimentales (6 puntos)</strong></p>
+                    <ul>
+                        <li>Puntos: <code>1,2.5;2,3.1;3,4.2;4,3.8;5,5.1;6,5.9</code></li>
+                        <li>Muchos puntos, tendencia no lineal</li>
+                        <li>Recomendado: Spline Cubico o Newton</li>
+                    </ul>
+
+                    <p><strong>Ejemplo 4: Funcion conocida (4 puntos de sen(x))</strong></p>
+                    <ul>
+                        <li>Puntos: <code>0,0;1.57,1;3.14,0;4.71,-1</code></li>
+                        <li>Aproximar sin(x) en [0, 2π]</li>
+                        <li>Recomendado: Newton o Lagrange</li>
+                    </ul>
+                </div>
+
+                <div class="ayuda-section">
+                    <h4>Visualizacion con Desmos</h4>
+                    <div class="info-box">
+                        <p>Todos los metodos generan graficas interactivas con Desmos que muestran:</p>
+                        <ul>
+                            <li>Puntos originales (marcados en rojo)</li>
+                            <li>Polinomio o spline interpolante (curva azul)</li>
+                            <li>Ecuacion del polinomio (cuando aplica)</li>
+                        </ul>
+                        <p class="tip"><strong>Tip:</strong> Usa Desmos para verificar que la interpolacion pasa exactamente por todos los puntos.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Vandermonde -->
         <div id="vandermonde" class="metodo-panel active">
             <h2>Método de Vandermonde</h2>

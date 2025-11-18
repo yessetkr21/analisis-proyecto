@@ -6,14 +6,6 @@
 {% block header_subtitle %}Métodos iterativos: Jacobi, Gauss-Seidel y SOR{% endblock %}
 
 {% block content %}
-<div class="help-box">
-    <h4>Formato de Entrada</h4>
-    <p><strong>Matriz A:</strong> Separa filas con ";" y columnas con ",". Ejemplo: <code>10,1,1;2,10,1;2,2,10</code></p>
-    <p><strong>Vector b:</strong> Separa elementos con ",". Ejemplo: <code>12,13,14</code></p>
-    <p><strong>Vector x0:</strong> (Opcional) Vector inicial. Si no se proporciona, usa el vector cero.</p>
-    <p><strong>⚠️ IMPORTANTE - Tolerancia:</strong> Solo son válidos <code>5e-X</code> (Cifras Significativas) o <code>0.5e-X</code> (Decimales Correctos). Otros formatos como <code>1e-5</code> se tratarán como tolerancia genérica.</p>
-</div>
-
 <div class="metodos-container">
     <div class="metodos-sidebar">
         <h3>Métodos Disponibles</h3>
@@ -25,6 +17,124 @@
     </div>
 
     <div class="metodo-content">
+        <!-- Ayuda General -->
+        <div class="ayuda-general-banner">
+            <button class="ayuda-toggle" onclick="toggleAyudaGeneral()">
+                Formato de Entrada (Click para ayuda)
+            </button>
+            <div id="ayuda-general-content" class="ayuda-general-content" style="display: none;">
+                <h3>Guia de Formato de Entrada - Capitulo 2</h3>
+
+                <div class="ayuda-section">
+                    <h4>Matriz A (Coeficientes del Sistema)</h4>
+                    <p><strong>Formato:</strong> Separa filas con ";" y elementos con ","</p>
+                    <table class="syntax-table">
+                        <tr><th>Sistema</th><th>Formato</th></tr>
+                        <tr>
+                            <td>2x2</td>
+                            <td><code>10,1;2,10</code></td>
+                        </tr>
+                        <tr>
+                            <td>3x3</td>
+                            <td><code>10,1,1;2,10,1;2,2,10</code></td>
+                        </tr>
+                        <tr>
+                            <td>4x4</td>
+                            <td><code>5,1,0,0;1,5,1,0;0,1,5,1;0,0,1,5</code></td>
+                        </tr>
+                    </table>
+                    <p class="tip"><strong>Restriccion:</strong> Matrices de 2x2 hasta 7x7. La matriz debe ser cuadrada.</p>
+                </div>
+
+                <div class="ayuda-section">
+                    <h4>Vector b (Terminos Independientes)</h4>
+                    <p><strong>Formato:</strong> Separa elementos con ","</p>
+                    <table class="syntax-table">
+                        <tr><th>Dimension</th><th>Ejemplo</th></tr>
+                        <tr><td>2 elementos</td><td><code>11,12</code></td></tr>
+                        <tr><td>3 elementos</td><td><code>12,13,14</code></td></tr>
+                        <tr><td>4 elementos</td><td><code>6,6,6,6</code></td></tr>
+                    </table>
+                    <p class="tip"><strong>Importante:</strong> El vector b debe tener el mismo numero de elementos que filas en la matriz A.</p>
+                </div>
+
+                <div class="ayuda-section">
+                    <h4>Vector Inicial x0 (Opcional)</h4>
+                    <p><strong>Formato:</strong> Separa elementos con ","</p>
+                    <p><strong>Por defecto:</strong> Si no se especifica, se usa el vector cero (0,0,0...)</p>
+                    <p><strong>Ejemplos:</strong></p>
+                    <ul>
+                        <li><code>0,0,0</code> - Vector cero (predeterminado)</li>
+                        <li><code>1,1,1</code> - Vector de unos</li>
+                        <li><code>0.5,0.5,0.5</code> - Valores personalizados</li>
+                    </ul>
+                </div>
+
+                <div class="ayuda-section">
+                    <h4>Tolerancia y Error</h4>
+                    <div class="info-box">
+                        <p><strong>Como se calcula el error:</strong></p>
+                        <p>Todos los metodos usan la <strong>norma infinito</strong>:</p>
+                        <p style="text-align: center; font-size: 1.1em; margin: 10px 0;">
+                            <code>Error = ||x<sup>(n)</sup> - x<sup>(n-1)</sup>||<sub>∞</sub></code>
+                        </p>
+                        <p>Esto mide la diferencia maxima entre iteraciones sucesivas.</p>
+                    </div>
+                    <p><strong>Ejemplos de tolerancia:</strong></p>
+                    <ul>
+                        <li><code>1e-6</code> = 0.000001 (precision alta)</li>
+                        <li><code>1e-10</code> = 0.0000000001 (precision muy alta)</li>
+                        <li><code>0.0001</code> = 0.0001 (precision media)</li>
+                    </ul>
+                </div>
+
+                <div class="ayuda-section">
+                    <h4>Factor de Relajacion w (Solo para SOR)</h4>
+                    <p><strong>Rango valido:</strong> 0 < w < 2</p>
+                    <table class="syntax-table">
+                        <tr><th>Valor</th><th>Tipo</th><th>Descripcion</th></tr>
+                        <tr><td>w < 1</td><td>Subrelajacion</td><td>Convergencia mas lenta pero mas estable</td></tr>
+                        <tr><td>w = 1</td><td>Gauss-Seidel</td><td>Equivalente al metodo Gauss-Seidel</td></tr>
+                        <tr><td>w > 1</td><td>Sobrerelajacion</td><td>Convergencia mas rapida (si converge)</td></tr>
+                    </table>
+                    <p class="tip"><strong>Valor recomendado:</strong> <code>1.5</code> (buena opcion inicial)</p>
+                </div>
+
+                <div class="ayuda-section">
+                    <h4>Convergencia de los Metodos</h4>
+                    <div class="info-box">
+                        <p><strong>Radio Espectral ρ(T):</strong></p>
+                        <p>Los resultados muestran el radio espectral de la matriz de iteracion.</p>
+                        <ul>
+                            <li><strong>ρ(T) < 1</strong> → El metodo converge (garantizado)</li>
+                            <li><strong>ρ(T) ≥ 1</strong> → El metodo puede no converger</li>
+                        </ul>
+                        <p class="tip"><strong>Diagonal dominante:</strong> Si la matriz es diagonalmente dominante,
+                        todos los metodos (Jacobi, Gauss-Seidel, SOR) convergen garantizadamente.</p>
+                    </div>
+                </div>
+
+                <div class="ayuda-section">
+                    <h4>Ejemplos Completos</h4>
+                    <p><strong>Sistema 3x3 diagonal dominante:</strong></p>
+                    <ul>
+                        <li>Matriz A: <code>10,1,1;2,10,1;2,2,10</code></li>
+                        <li>Vector b: <code>12,13,14</code></li>
+                        <li>Tolerancia: <code>1e-6</code></li>
+                        <li>Iteraciones: <code>100</code></li>
+                    </ul>
+
+                    <p><strong>Sistema 4x4 tridiagonal:</strong></p>
+                    <ul>
+                        <li>Matriz A: <code>4,1,0,0;1,4,1,0;0,1,4,1;0,0,1,4</code></li>
+                        <li>Vector b: <code>5,5,5,5</code></li>
+                        <li>Tolerancia: <code>1e-8</code></li>
+                        <li>Iteraciones: <code>200</code></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
         <!-- Jacobi -->
         <div id="jacobi" class="metodo-panel active">
             <h2>Método de Jacobi</h2>
@@ -49,8 +159,8 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tolerancia:</label>
-                        <input type="text" name="tol" placeholder="5e-7 o 0.5e-10" required>
-                        <small>Ejemplos: 5e-7 (Cifras Sig.) o 0.5e-10 (Decimales Correctos)</small>
+                        <input type="text" name="tol" placeholder="1e-6" required>
+                        <small>Ejemplos: 1e-6, 1e-10, 0.0001 (Error calculado con norma infinito)</small>
                     </div>
                     <div class="form-group">
                         <label>Iteraciones máximas:</label>
@@ -83,8 +193,8 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tolerancia:</label>
-                        <input type="text" name="tol" placeholder="5e-7 o 0.5e-10" required>
-                        <small>Ejemplos: 5e-7 (Cifras Sig.) o 0.5e-10 (Decimales Correctos)</small>
+                        <input type="text" name="tol" placeholder="1e-6" required>
+                        <small>Ejemplos: 1e-6, 1e-10, 0.0001 (Error calculado con norma infinito)</small>
                     </div>
                     <div class="form-group">
                         <label>Iteraciones máximas:</label>
@@ -133,8 +243,8 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tolerancia:</label>
-                        <input type="text" name="tol" placeholder="5e-7 o 0.5e-10" required>
-                        <small>Ejemplos: 5e-7 (Cifras Sig.) o 0.5e-10 (Decimales Correctos)</small>
+                        <input type="text" name="tol" placeholder="1e-6" required>
+                        <small>Ejemplos: 1e-6, 1e-10, 0.0001 (Error calculado con norma infinito)</small>
                     </div>
                     <div class="form-group">
                         <label>Iteraciones máximas:</label>
@@ -191,8 +301,8 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tolerancia:</label>
-                        <input type="text" name="tol" placeholder="5e-7 o 0.5e-10" required>
-                        <small>Ejemplos: 5e-7 (Cifras Sig.) o 0.5e-10 (Decimales Correctos)</small>
+                        <input type="text" name="tol" placeholder="1e-6" required>
+                        <small>Ejemplos: 1e-6, 1e-10, 0.0001 (Error calculado con norma infinito)</small>
                     </div>
                     <div class="form-group">
                         <label>Iteraciones máximas:</label>

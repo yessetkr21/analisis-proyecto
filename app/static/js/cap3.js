@@ -359,3 +359,19 @@ function mostrarError(metodo, mensaje) {
         resultadosDiv.innerHTML = `<div class="result-message error">Error: ${mensaje}</div>`;
     }
 }
+
+// Función para toggle del botón de ayuda
+function toggleAyudaGeneral() {
+    const content = document.getElementById('ayuda-general-content');
+    const button = document.querySelector('.ayuda-toggle');
+
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        button.textContent = 'Ocultar ayuda (Click aqui)';
+        button.style.background = '#27ae60';
+    } else {
+        content.style.display = 'none';
+        button.textContent = 'Formato de Entrada (Click para ayuda)';
+        button.style.background = '#3498db';
+    }
+}

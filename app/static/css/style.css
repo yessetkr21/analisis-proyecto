@@ -320,6 +320,25 @@ body {
     color: #1a1a1a;
 }
 
+.btn-precision {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #2196F3;
+    color: #ffffff;
+    border: 2px solid #2196F3;
+    border-radius: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+.btn-precision:hover {
+    background: #ffffff;
+    color: #2196F3;
+    border: 2px solid #2196F3;
+}
+
 /* ===== CARACTERÍSTICAS ===== */
 .info-section {
     margin-top: 40px;
@@ -527,6 +546,22 @@ table {
     background: white;
     border-radius: 8px;
     overflow: hidden;
+    table-layout: auto;
+}
+
+/* Estilo para celdas con valores numéricos */
+td.valor-x {
+    white-space: nowrap;
+    min-width: 150px;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    padding: 12px 16px !important;
+}
+
+/* Alinear encabezados de columnas numéricas al centro */
+table thead th {
+    text-align: center;
+    vertical-align: middle;
 }
 
 thead {
@@ -535,9 +570,10 @@ thead {
 }
 
 th, td {
-    padding: 12px;
-    text-align: left;
+    padding: 12px 16px;
+    text-align: center;
     border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
 }
 
 tr:hover {

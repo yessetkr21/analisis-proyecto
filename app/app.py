@@ -120,7 +120,7 @@ def api_biseccion():
         required_fields = ['xi', 'xs', 'tol', 'niter', 'funcion']
         missing_fields = [field for field in required_fields if field not in data]
         if missing_fields:
-            return jsonify({"exito": False, "mensaje": f"❌ Faltan campos requeridos: {', '.join(missing_fields)}"}), 400
+            return jsonify({"exito": False, "mensaje": f"[ERROR] Faltan campos requeridos: {', '.join(missing_fields)}"}), 400
 
         # Validar tipos de datos
         try:
@@ -129,23 +129,23 @@ def api_biseccion():
             tol = float(data['tol'])
             niter = int(data['niter'])
         except (ValueError, TypeError):
-            return jsonify({"exito": False, "mensaje": "❌ Los valores numéricos no son válidos.\n💡 Asegúrate de que xi, xs, tol y niter sean números."}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] Los valores numéricos no son válidos.\n💡 Asegúrate de que xi, xs, tol y niter sean números."}), 400
 
         # Validar rangos
         if tol <= 0:
-            return jsonify({"exito": False, "mensaje": "❌ La tolerancia debe ser un número positivo.\n💡 Ejemplo: 1e-5"}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] La tolerancia debe ser un número positivo.\n💡 Ejemplo: 1e-5"}), 400
 
         if niter <= 0:
-            return jsonify({"exito": False, "mensaje": "❌ El número de iteraciones debe ser positivo.\n💡 Ejemplo: 100"}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] El número de iteraciones debe ser positivo.\n💡 Ejemplo: 100"}), 400
 
         if xi == xs:
-            return jsonify({"exito": False, "mensaje": "❌ Los valores xi y xs deben ser diferentes.\n💡 Necesitas un intervalo [xi, xs] válido."}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] Los valores xi y xs deben ser diferentes.\n💡 Necesitas un intervalo [xi, xs] válido."}), 400
 
         tol_str = str(data['tol'])  # Mantener string original
         resultado = capitulo1.biseccion(xi, xs, tol, niter, data['funcion'], tol_str)
         return jsonify(resultado)
     except Exception as e:
-        return jsonify({"exito": False, "mensaje": f"❌ Error inesperado: {str(e)}"}), 400
+        return jsonify({"exito": False, "mensaje": f"[ERROR] Error inesperado: {str(e)}"}), 400
 
 
 @app.route('/api/capitulo1/regla-falsa', methods=['POST'])
@@ -157,7 +157,7 @@ def api_regla_falsa():
         required_fields = ['xi', 'xs', 'tol', 'niter', 'funcion']
         missing_fields = [field for field in required_fields if field not in data]
         if missing_fields:
-            return jsonify({"exito": False, "mensaje": f"❌ Faltan campos requeridos: {', '.join(missing_fields)}"}), 400
+            return jsonify({"exito": False, "mensaje": f"[ERROR] Faltan campos requeridos: {', '.join(missing_fields)}"}), 400
 
         # Validar tipos
         try:
@@ -166,23 +166,23 @@ def api_regla_falsa():
             tol = float(data['tol'])
             niter = int(data['niter'])
         except (ValueError, TypeError):
-            return jsonify({"exito": False, "mensaje": "❌ Los valores numéricos no son válidos.\n💡 Asegúrate de que xi, xs, tol y niter sean números."}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] Los valores numéricos no son válidos.\n💡 Asegúrate de que xi, xs, tol y niter sean números."}), 400
 
         # Validar rangos
         if tol <= 0:
-            return jsonify({"exito": False, "mensaje": "❌ La tolerancia debe ser un número positivo.\n💡 Ejemplo: 1e-5"}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] La tolerancia debe ser un número positivo.\n💡 Ejemplo: 1e-5"}), 400
 
         if niter <= 0:
-            return jsonify({"exito": False, "mensaje": "❌ El número de iteraciones debe ser positivo.\n💡 Ejemplo: 100"}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] El número de iteraciones debe ser positivo.\n💡 Ejemplo: 100"}), 400
 
         if xi == xs:
-            return jsonify({"exito": False, "mensaje": "❌ Los valores xi y xs deben ser diferentes.\n💡 Necesitas un intervalo [xi, xs] válido."}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] Los valores xi y xs deben ser diferentes.\n💡 Necesitas un intervalo [xi, xs] válido."}), 400
 
         tol_str = str(data['tol'])
         resultado = capitulo1.regla_falsa(xi, xs, tol, niter, data['funcion'], tol_str)
         return jsonify(resultado)
     except Exception as e:
-        return jsonify({"exito": False, "mensaje": f"❌ Error inesperado: {str(e)}"}), 400
+        return jsonify({"exito": False, "mensaje": f"[ERROR] Error inesperado: {str(e)}"}), 400
 
 
 @app.route('/api/capitulo1/punto-fijo', methods=['POST'])
@@ -210,7 +210,7 @@ def api_newton():
         required_fields = ['x0', 'tol', 'niter', 'funcion']
         missing_fields = [field for field in required_fields if field not in data]
         if missing_fields:
-            return jsonify({"exito": False, "mensaje": f"❌ Faltan campos requeridos: {', '.join(missing_fields)}"}), 400
+            return jsonify({"exito": False, "mensaje": f"[ERROR] Faltan campos requeridos: {', '.join(missing_fields)}"}), 400
 
         # Validar tipos
         try:
@@ -218,19 +218,19 @@ def api_newton():
             tol = float(data['tol'])
             niter = int(data['niter'])
         except (ValueError, TypeError):
-            return jsonify({"exito": False, "mensaje": "❌ Los valores numéricos no son válidos.\n💡 Asegúrate de que x0, tol y niter sean números."}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] Los valores numéricos no son válidos.\n💡 Asegúrate de que x0, tol y niter sean números."}), 400
 
         # Validar rangos
         if tol <= 0:
-            return jsonify({"exito": False, "mensaje": "❌ La tolerancia debe ser un número positivo.\n💡 Ejemplo: 1e-5"}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] La tolerancia debe ser un número positivo.\n💡 Ejemplo: 1e-5"}), 400
 
         if niter <= 0:
-            return jsonify({"exito": False, "mensaje": "❌ El número de iteraciones debe ser positivo.\n💡 Ejemplo: 100"}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] El número de iteraciones debe ser positivo.\n💡 Ejemplo: 100"}), 400
 
         resultado = capitulo1.newton_raphson(x0, tol, niter, data['funcion'])
         return jsonify(resultado)
     except Exception as e:
-        return jsonify({"exito": False, "mensaje": f"❌ Error inesperado: {str(e)}"}), 400
+        return jsonify({"exito": False, "mensaje": f"[ERROR] Error inesperado: {str(e)}"}), 400
 
 
 @app.route('/api/capitulo1/secante', methods=['POST'])
@@ -242,7 +242,7 @@ def api_secante():
         required_fields = ['x0', 'x1', 'tol', 'niter', 'funcion']
         missing_fields = [field for field in required_fields if field not in data]
         if missing_fields:
-            return jsonify({"exito": False, "mensaje": f"❌ Faltan campos requeridos: {', '.join(missing_fields)}"}), 400
+            return jsonify({"exito": False, "mensaje": f"[ERROR] Faltan campos requeridos: {', '.join(missing_fields)}"}), 400
 
         # Validar tipos
         try:
@@ -251,17 +251,17 @@ def api_secante():
             tol = float(data['tol'])
             niter = int(data['niter'])
         except (ValueError, TypeError):
-            return jsonify({"exito": False, "mensaje": "❌ Los valores numéricos no son válidos.\n💡 Asegúrate de que x0, x1, tol y niter sean números."}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] Los valores numéricos no son válidos.\n💡 Asegúrate de que x0, x1, tol y niter sean números."}), 400
 
         # Validar rangos
         if tol <= 0:
-            return jsonify({"exito": False, "mensaje": "❌ La tolerancia debe ser un número positivo.\n💡 Ejemplo: 1e-5"}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] La tolerancia debe ser un número positivo.\n💡 Ejemplo: 1e-5"}), 400
 
         if niter <= 0:
-            return jsonify({"exito": False, "mensaje": "❌ El número de iteraciones debe ser positivo.\n💡 Ejemplo: 100"}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] El número de iteraciones debe ser positivo.\n💡 Ejemplo: 100"}), 400
 
         if x0 == x1:
-            return jsonify({"exito": False, "mensaje": "❌ Los valores x0 y x1 deben ser diferentes.\n💡 Necesitas dos puntos iniciales distintos."}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] Los valores x0 y x1 deben ser diferentes.\n💡 Necesitas dos puntos iniciales distintos."}), 400
 
         tol_str = str(data['tol'])
         resultado = capitulo1.secante(x0, x1, tol, niter, data['funcion'], tol_str)
@@ -279,7 +279,7 @@ def api_raices_multiples():
         required_fields = ['x0', 'tol', 'niter', 'funcion']
         missing_fields = [field for field in required_fields if field not in data]
         if missing_fields:
-            return jsonify({"exito": False, "mensaje": f"❌ Faltan campos requeridos: {', '.join(missing_fields)}"}), 400
+            return jsonify({"exito": False, "mensaje": f"[ERROR] Faltan campos requeridos: {', '.join(missing_fields)}"}), 400
 
         # Validar tipos
         try:
@@ -289,26 +289,26 @@ def api_raices_multiples():
             metodo = int(data.get('metodo', 2))
             multiplicidad = int(data['multiplicidad']) if data.get('multiplicidad') else None
         except (ValueError, TypeError):
-            return jsonify({"exito": False, "mensaje": "❌ Los valores numéricos no son válidos.\n💡 Asegúrate de que x0, tol, niter y metodo sean números."}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] Los valores numéricos no son válidos.\n💡 Asegúrate de que x0, tol, niter y metodo sean números."}), 400
 
         # Validar rangos
         if tol <= 0:
-            return jsonify({"exito": False, "mensaje": "❌ La tolerancia debe ser un número positivo.\n💡 Ejemplo: 1e-5"}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] La tolerancia debe ser un número positivo.\n💡 Ejemplo: 1e-5"}), 400
 
         if niter <= 0:
-            return jsonify({"exito": False, "mensaje": "❌ El número de iteraciones debe ser positivo.\n💡 Ejemplo: 100"}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] El número de iteraciones debe ser positivo.\n💡 Ejemplo: 100"}), 400
 
         if metodo not in [1, 2]:
-            return jsonify({"exito": False, "mensaje": "❌ El método debe ser 1 (con multiplicidad) o 2 (con segunda derivada)."}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] El método debe ser 1 (con multiplicidad) o 2 (con segunda derivada)."}), 400
 
         if metodo == 1 and not multiplicidad:
-            return jsonify({"exito": False, "mensaje": "❌ Para el método 1 debes especificar la multiplicidad.\n💡 Ejemplo: 2 para raíz doble, 3 para raíz triple."}), 400
+            return jsonify({"exito": False, "mensaje": "[ERROR] Para el método 1 debes especificar la multiplicidad.\n💡 Ejemplo: 2 para raíz doble, 3 para raíz triple."}), 400
 
         tol_str = str(data['tol'])
         resultado = capitulo1.raices_multiples(x0, tol, niter, data['funcion'], metodo, multiplicidad, tol_str)
         return jsonify(resultado)
     except Exception as e:
-        return jsonify({"exito": False, "mensaje": f"❌ Error inesperado: {str(e)}"}), 400
+        return jsonify({"exito": False, "mensaje": f"[ERROR] Error inesperado: {str(e)}"}), 400
 
 
 @app.route('/api/capitulo1/grafica', methods=['POST'])
@@ -399,6 +399,21 @@ def api_comparar_cap1():
 def api_jacobi():
     try:
         data = request.json
+
+        # Validar que se recibió JSON
+        if not data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] No se recibieron datos"}), 400
+
+        # Validar campos obligatorios
+        if 'matriz' not in data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'matriz'"}), 400
+        if 'vector_b' not in data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'vector_b'"}), 400
+        if 'tol' not in data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'tol' (tolerancia)"}), 400
+        if 'niter' not in data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'niter' (iteraciones)"}), 400
+
         A, b, error = capitulo2.validar_matriz(data['matriz'], data['vector_b'])
 
         if error:
@@ -406,17 +421,46 @@ def api_jacobi():
 
         x0 = parsear_vector_x0(data.get('x0', ''), len(A))
 
-        tol_str = str(data['tol'])  # Mantener string original
-        resultado = capitulo2.jacobi(A, b, x0, float(data['tol']), int(data['niter']), tol_str)
+        # Validar tolerancia y niter
+        try:
+            tol = float(data['tol'])
+            niter = int(data['niter'])
+        except ValueError:
+            return jsonify({"exito": False, "mensaje": "[ERROR] La tolerancia y el número de iteraciones deben ser números válidos"}), 400
+
+        if tol <= 0:
+            return jsonify({"exito": False, "mensaje": "[ERROR] La tolerancia debe ser mayor que 0"}), 400
+
+        if niter <= 0:
+            return jsonify({"exito": False, "mensaje": "[ERROR] El número de iteraciones debe ser mayor que 0"}), 400
+
+        resultado = capitulo2.jacobi(A, b, x0, tol, niter)
         return jsonify(resultado)
+    except KeyError as ke:
+        return jsonify({"exito": False, "mensaje": f"[ERROR] Falta el campo obligatorio: {str(ke)}"}), 400
     except Exception as e:
-        return jsonify({"exito": False, "mensaje": str(e)}), 400
+        return jsonify({"exito": False, "mensaje": f"[ERROR] Error inesperado: {str(e)}"}), 500
 
 
 @app.route('/api/capitulo2/gauss-seidel', methods=['POST'])
 def api_gauss_seidel():
     try:
         data = request.json
+
+        # Validar que se recibió JSON
+        if not data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] No se recibieron datos"}), 400
+
+        # Validar campos obligatorios
+        if 'matriz' not in data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'matriz'"}), 400
+        if 'vector_b' not in data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'vector_b'"}), 400
+        if 'tol' not in data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'tol' (tolerancia)"}), 400
+        if 'niter' not in data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'niter' (iteraciones)"}), 400
+
         A, b, error = capitulo2.validar_matriz(data['matriz'], data['vector_b'])
 
         if error:
@@ -424,17 +468,48 @@ def api_gauss_seidel():
 
         x0 = parsear_vector_x0(data.get('x0', ''), len(A))
 
-        tol_str = str(data['tol'])  # Mantener string original
-        resultado = capitulo2.gauss_seidel(A, b, x0, float(data['tol']), int(data['niter']), tol_str)
+        # Validar tolerancia y niter
+        try:
+            tol = float(data['tol'])
+            niter = int(data['niter'])
+        except ValueError:
+            return jsonify({"exito": False, "mensaje": "[ERROR] La tolerancia y el número de iteraciones deben ser números válidos"}), 400
+
+        if tol <= 0:
+            return jsonify({"exito": False, "mensaje": "[ERROR] La tolerancia debe ser mayor que 0"}), 400
+
+        if niter <= 0:
+            return jsonify({"exito": False, "mensaje": "[ERROR] El número de iteraciones debe ser mayor que 0"}), 400
+
+        resultado = capitulo2.gauss_seidel(A, b, x0, tol, niter)
         return jsonify(resultado)
+    except KeyError as ke:
+        return jsonify({"exito": False, "mensaje": f"[ERROR] Falta el campo obligatorio: {str(ke)}"}), 400
     except Exception as e:
-        return jsonify({"exito": False, "mensaje": str(e)}), 400
+        return jsonify({"exito": False, "mensaje": f"[ERROR] Error inesperado: {str(e)}"}), 500
 
 
 @app.route('/api/capitulo2/sor', methods=['POST'])
 def api_sor():
     try:
         data = request.json
+
+        # Validar que se recibió JSON
+        if not data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] No se recibieron datos"}), 400
+
+        # Validar campos obligatorios
+        if 'matriz' not in data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'matriz'"}), 400
+        if 'vector_b' not in data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'vector_b'"}), 400
+        if 'tol' not in data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'tol' (tolerancia)"}), 400
+        if 'niter' not in data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'niter' (iteraciones)"}), 400
+        if 'w' not in data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'w' (factor de relajación)"}), 400
+
         A, b, error = capitulo2.validar_matriz(data['matriz'], data['vector_b'])
 
         if error:
@@ -442,11 +517,29 @@ def api_sor():
 
         x0 = parsear_vector_x0(data.get('x0', ''), len(A))
 
-        tol_str = str(data['tol'])  # Mantener string original
-        resultado = capitulo2.sor(A, b, x0, float(data['tol']), int(data['niter']), float(data['w']), tol_str)
+        # Validar tolerancia, niter y w
+        try:
+            tol = float(data['tol'])
+            niter = int(data['niter'])
+            w = float(data['w'])
+        except ValueError:
+            return jsonify({"exito": False, "mensaje": "[ERROR] La tolerancia, iteraciones y factor w deben ser números válidos"}), 400
+
+        if tol <= 0:
+            return jsonify({"exito": False, "mensaje": "[ERROR] La tolerancia debe ser mayor que 0"}), 400
+
+        if niter <= 0:
+            return jsonify({"exito": False, "mensaje": "[ERROR] El número de iteraciones debe ser mayor que 0"}), 400
+
+        if w <= 0 or w >= 2:
+            return jsonify({"exito": False, "mensaje": "[ERROR] El factor de relajación w debe estar entre 0 y 2 (0 < w < 2)"}), 400
+
+        resultado = capitulo2.sor(A, b, x0, tol, niter, w)
         return jsonify(resultado)
+    except KeyError as ke:
+        return jsonify({"exito": False, "mensaje": f"[ERROR] Falta el campo obligatorio: {str(ke)}"}), 400
     except Exception as e:
-        return jsonify({"exito": False, "mensaje": str(e)}), 400
+        return jsonify({"exito": False, "mensaje": f"[ERROR] Error inesperado: {str(e)}"}), 500
 
 
 @app.route('/api/capitulo2/comparar', methods=['POST'])
@@ -756,38 +849,67 @@ def informe_capitulo2():
     import time
     try:
         data = request.get_json()
-        A, b = parsear_matriz(data['matriz'], data['vector_b'])
+
+        # Validar que se recibió JSON
+        if not data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] No se recibieron datos"}), 400
+
+        # Validar campos obligatorios
+        if 'matriz' not in data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'matriz'"}), 400
+        if 'vector_b' not in data:
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'vector_b'"}), 400
+        if 'tol' not in data or not data['tol'] or str(data['tol']).strip() == '':
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'tol' (tolerancia). Debe ingresar un valor como 1e-6 o 0.0001"}), 400
+        if 'niter' not in data or not data['niter'] or str(data['niter']).strip() == '':
+            return jsonify({"exito": False, "mensaje": "[ERROR] Falta el campo 'niter' (iteraciones). Debe ingresar un número entero positivo"}), 400
+
+        # Validar matriz usando la función del módulo
+        A, b, error = capitulo2.validar_matriz(data['matriz'], data['vector_b'])
+        if error:
+            return jsonify({"exito": False, "mensaje": error}), 400
+
         n = len(A)
         x0 = parsear_vector_x0(data.get('x0', ''), n)
-        tol = float(data['tol'])
-        tol_str = str(data['tol'])  # Mantener string original para detectar tipo de error
-        niter = int(data['niter'])
-        w = float(data.get('w', 1.5))
+
+        # Validar tolerancia y niter
+        try:
+            tol = float(data['tol'])
+            niter = int(data['niter'])
+        except ValueError:
+            return jsonify({"exito": False, "mensaje": "[ERROR] La tolerancia y el número de iteraciones deben ser números válidos"}), 400
+
+        if tol <= 0:
+            return jsonify({"exito": False, "mensaje": "[ERROR] La tolerancia debe ser mayor que 0"}), 400
+
+        if niter <= 0:
+            return jsonify({"exito": False, "mensaje": "[ERROR] El número de iteraciones debe ser mayor que 0"}), 400
+
+        # Validar w (opcional, valor por defecto 1.5)
+        try:
+            w = float(data.get('w', 1.5))
+        except ValueError:
+            return jsonify({"exito": False, "mensaje": "[ERROR] El factor de relajación w debe ser un número válido"}), 400
+
+        if w <= 0 or w >= 2:
+            return jsonify({"exito": False, "mensaje": "[ERROR] El factor de relajación w debe estar entre 0 y 2 (0 < w < 2)"}), 400
 
         resultados = []
 
         # 1. Jacobi
         try:
             inicio = time.time()
-            res = capitulo2.jacobi(A.copy(), b.copy(), x0.copy(), tol, niter, tol_str)
+            res = capitulo2.jacobi(A.copy(), b.copy(), x0.copy(), tol, niter)
             tiempo = time.time() - inicio
             if res['exito']:
-                # Extraer última fila de la tabla para obtener todos los errores
-                ultima_fila = res['tabla'][-1] if res['tabla'] else None
                 resultados.append({
                     'metodo': 'Jacobi',
                     'exito': True,
                     'iteraciones': res['iteraciones'],
                     'error_final': res['error_final'],
-                    'error_abs': ultima_fila['error_abs'] if ultima_fila else None,
-                    'error_rel1': ultima_fila['error_rel1'] if ultima_fila else None,
-                    'error_rel2': ultima_fila['error_rel2'] if ultima_fila else None,
-                    'error_rel3': ultima_fila['error_rel3'] if ultima_fila else None,
-                    'error_rel4': ultima_fila['error_rel4'] if ultima_fila else None,
                     'radio_espectral': res['radio_espectral'],
                     'converge': res['converge'],
-                    'tiempo': tiempo,
-                    'tipo_error': res.get('tipo_error', 'ninguno')
+                    'tiempo': tiempo
                 })
         except Exception as e:
             resultados.append({'metodo': 'Jacobi', 'exito': False, 'error_msg': str(e)})
@@ -795,24 +917,17 @@ def informe_capitulo2():
         # 2. Gauss-Seidel
         try:
             inicio = time.time()
-            res = capitulo2.gauss_seidel(A.copy(), b.copy(), x0.copy(), tol, niter, tol_str)
+            res = capitulo2.gauss_seidel(A.copy(), b.copy(), x0.copy(), tol, niter)
             tiempo = time.time() - inicio
             if res['exito']:
-                ultima_fila = res['tabla'][-1] if res['tabla'] else None
                 resultados.append({
                     'metodo': 'Gauss-Seidel',
                     'exito': True,
                     'iteraciones': res['iteraciones'],
                     'error_final': res['error_final'],
-                    'error_abs': ultima_fila['error_abs'] if ultima_fila else None,
-                    'error_rel1': ultima_fila['error_rel1'] if ultima_fila else None,
-                    'error_rel2': ultima_fila['error_rel2'] if ultima_fila else None,
-                    'error_rel3': ultima_fila['error_rel3'] if ultima_fila else None,
-                    'error_rel4': ultima_fila['error_rel4'] if ultima_fila else None,
                     'radio_espectral': res['radio_espectral'],
                     'converge': res['converge'],
-                    'tiempo': tiempo,
-                    'tipo_error': res.get('tipo_error', 'ninguno')
+                    'tiempo': tiempo
                 })
         except Exception as e:
             resultados.append({'metodo': 'Gauss-Seidel', 'exito': False, 'error_msg': str(e)})
@@ -820,24 +935,17 @@ def informe_capitulo2():
         # 3. SOR
         try:
             inicio = time.time()
-            res = capitulo2.sor(A.copy(), b.copy(), x0.copy(), tol, niter, w, tol_str)
+            res = capitulo2.sor(A.copy(), b.copy(), x0.copy(), tol, niter, w)
             tiempo = time.time() - inicio
             if res['exito']:
-                ultima_fila = res['tabla'][-1] if res['tabla'] else None
                 resultados.append({
                     'metodo': f'SOR (w={w})',
                     'exito': True,
                     'iteraciones': res['iteraciones'],
                     'error_final': res['error_final'],
-                    'error_abs': ultima_fila['error_abs'] if ultima_fila else None,
-                    'error_rel1': ultima_fila['error_rel1'] if ultima_fila else None,
-                    'error_rel2': ultima_fila['error_rel2'] if ultima_fila else None,
-                    'error_rel3': ultima_fila['error_rel3'] if ultima_fila else None,
-                    'error_rel4': ultima_fila['error_rel4'] if ultima_fila else None,
                     'radio_espectral': res['radio_espectral'],
                     'converge': res['converge'],
-                    'tiempo': tiempo,
-                    'tipo_error': res.get('tipo_error', 'ninguno')
+                    'tiempo': tiempo
                 })
         except Exception as e:
             resultados.append({'metodo': 'SOR', 'exito': False, 'error_msg': str(e)})
@@ -854,18 +962,13 @@ def informe_capitulo2():
 
         # Encontrar el mejor método por diferentes criterios
         mejor_iter = min(exitosos, key=lambda x: x['iteraciones'])
-        mejor_error_abs = min(exitosos, key=lambda x: x['error_abs'] if x['error_abs'] is not None else float('inf'))
-        mejor_error_rel1 = min(exitosos, key=lambda x: x['error_rel1'] if x['error_rel1'] is not None else float('inf'))
-        mejor_error_rel2 = min(exitosos, key=lambda x: x['error_rel2'] if x['error_rel2'] is not None else float('inf'))
+        mejor_error = min(exitosos, key=lambda x: x['error_final'])
 
         return jsonify({
             'exito': True,
             'resultados': resultados,
             'mejor_iteraciones': mejor_iter['metodo'],
-            'mejor_error_abs': mejor_error_abs['metodo'],
-            'mejor_error_rel1': mejor_error_rel1['metodo'],
-            'mejor_error_rel2': mejor_error_rel2['metodo'],
-            'tipo_error_usado': exitosos[0].get('tipo_error', 'ninguno'),
+            'mejor_error': mejor_error['metodo'],
             'estadisticas': {
                 'total_metodos': len(resultados),
                 'exitosos': len(exitosos),
