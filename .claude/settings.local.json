@@ -1,9 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python:*)",
-      "Bash(git checkout:*)",
+      "Bash(git config:*)",
       "Bash(git add:*)",
+      "Bash(git commit:*)",
       "Bash(git push:*)"
     ],
     "deny": [],

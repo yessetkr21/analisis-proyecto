@@ -292,6 +292,22 @@
 
 {% block extra_js %}
 <script>
+// Función para toggle del botón de ayuda general
+function toggleAyudaGeneral() {
+    const content = document.getElementById('ayuda-general-content');
+    const button = document.querySelector('.ayuda-toggle');
+
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        button.textContent = 'Ocultar ayuda (Click aqui)';
+        button.style.background = '#27ae60';
+    } else {
+        content.style.display = 'none';
+        button.textContent = 'Formato de Entrada (Click para ayuda)';
+        button.style.background = '#3498db';
+    }
+}
+
 function cambiarMetodo(metodo) {
     document.querySelectorAll('.metodo-panel').forEach(p => p.classList.remove('active'));
     document.getElementById(metodo).classList.add('active');
@@ -353,9 +369,115 @@ function mostrarResultadosCap3(divId, resultado) {
     div.innerHTML = html;
 }
 
-function graficarInterpolacion(resultado) {
-    if (!resultado.puntos_grafica) return;
+// Variable para almacenar la calculadora de Desmos
+let desmosCalculatorCap3 = null;
 
+function graficarInterpolacion(resultado) {
+    if (!resultado.puntos_grafica || !resultado.puntos_originales) return;
+
+    const graficaDiv = document.getElementById('grafica-cap3');
+
+    try {
+        // Crear calculadora de Desmos si no existe
+        if (!desmosCalculatorCap3) {
+            graficaDiv.innerHTML = ''; // Limpiar contenido anterior
+            desmosCalculatorCap3 = Desmos.GraphingCalculator(graficaDiv, {
+                expressions: true,
+                settingsMenu: false,
+                zoomButtons: true,
+                expressionsTopbar: false,
+                pointsOfInterest: true,
+                trace: true,
+                border: false,
+                keypad: false
+            });
+        } else {
+            // Limpiar gráfica anterior
+            desmosCalculatorCap3.setBlank();
+        }
+
+        // Agregar puntos originales (en rojo)
+        const puntosOriginales = resultado.puntos_originales.x.map((x, i) => {
+            return `(${x}, ${resultado.puntos_originales.y[i]})`;
+        }).join(', ');
+
+        desmosCalculatorCap3.setExpression({
+            id: 'puntos-originales',
+            latex: `\\left[${puntosOriginales}\\right]`,
+            color: '#e74c3c',
+            pointSize: 12,
+            label: 'Puntos dados',
+            showLabel: true,
+            labelSize: Desmos.LabelSizes.MEDIUM
+        });
+
+        // Crear tabla de datos para la curva de interpolación
+        const puntosInterpolacion = resultado.puntos_grafica.x.map((x, i) => {
+            return [x, resultado.puntos_grafica.y[i]];
+        });
+
+        // Graficar curva de interpolación (en azul)
+        desmosCalculatorCap3.setExpression({
+            id: 'tabla-interpolacion',
+            type: 'table',
+            columns: [
+                {
+                    latex: 'x_i',
+                    values: puntosInterpolacion.map(p => p[0].toString())
+                },
+                {
+                    latex: 'y_i',
+                    values: puntosInterpolacion.map(p => p[1].toString()),
+                    color: '#3498db',
+                    lineStyle: Desmos.Styles.SOLID,
+                    lineWidth: 2.5
+                }
+            ]
+        });
+
+        // Si hay polinomio, mostrarlo como título
+        if (resultado.polinomio_str) {
+            let polinomioCorto = resultado.polinomio_str;
+            if (polinomioCorto.length > 60) {
+                polinomioCorto = polinomioCorto.substring(0, 60) + '...';
+            }
+
+            desmosCalculatorCap3.setExpression({
+                id: 'titulo-polinomio',
+                latex: `\\text{${polinomioCorto}}`,
+                color: '#9b59b6',
+                showLabel: false
+            });
+        }
+
+        // Ajustar vista automáticamente
+        const todosX = [...resultado.puntos_originales.x, ...resultado.puntos_grafica.x];
+        const todosY = [...resultado.puntos_originales.y, ...resultado.puntos_grafica.y];
+
+        const minX = Math.min(...todosX);
+        const maxX = Math.max(...todosX);
+        const minY = Math.min(...todosY);
+        const maxY = Math.max(...todosY);
+
+        const margenX = (maxX - minX) * 0.1 || 1;
+        const margenY = (maxY - minY) * 0.1 || 1;
+
+        desmosCalculatorCap3.setMathBounds({
+            left: minX - margenX,
+            right: maxX + margenX,
+            bottom: minY - margenY,
+            top: maxY + margenY
+        });
+
+    } catch (error) {
+        console.error('Error al graficar con Desmos:', error);
+        // Fallback a Plotly si Desmos falla
+        graficarConPlotly(resultado);
+    }
+}
+
+// Función de respaldo con Plotly
+function graficarConPlotly(resultado) {
     const trace1 = {
         x: resultado.puntos_originales.x,
         y: resultado.puntos_originales.y,
